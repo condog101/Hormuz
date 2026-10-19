@@ -14,6 +14,10 @@ export class Controls {
       fire: K.SPACE, flank: K.SHIFT, ciws: K.E, ciws2: K.Q, pause: K.ESC, pause2: K.P,
     }) as Record<string, Phaser.Input.Keyboard.Key>;
     scene.input.on('pointermove', () => (this.usingPad = false));
+    // Pointer.rightButtonReleased() stays true after a release, so latch clicks ourselves.
+    scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (p.rightButtonDown()) this.rightClicked = true;
+    });
     scene.input.mouse?.disableContextMenu();
   }
 
@@ -76,16 +80,19 @@ export class Controls {
   }
 
   private padPrev = { ciws: false, pause: false };
+  private rightClicked = false;
 
   ciws(): boolean {
     const pad = this.pad;
     const padNow = !!(pad && (pad.B || pad.R1 > 0));
     const fired = padNow && !this.padPrev.ciws;
     this.padPrev.ciws = padNow;
+    const clicked = this.rightClicked;
+    this.rightClicked = false;
     return (
       Phaser.Input.Keyboard.JustDown(this.keys.ciws) ||
       Phaser.Input.Keyboard.JustDown(this.keys.ciws2) ||
-      this.scene.input.activePointer.rightButtonReleased() ||
+      clicked ||
       fired
     );
   }
