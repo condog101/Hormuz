@@ -75,6 +75,7 @@ export function menu(scene: Phaser.Scene, x: number, y: number, items: MenuItem[
 
   const kb = scene.input.keyboard!;
   const onKey = (e: KeyboardEvent) => {
+    if (e.repeat && (e.code === 'Enter' || e.code === 'Space')) return;
     if (e.code === 'ArrowUp' || e.code === 'KeyW') moveBy(-1);
     else if (e.code === 'ArrowDown' || e.code === 'KeyS') moveBy(1);
     else if (e.code === 'Enter' || e.code === 'Space') activate();
@@ -113,7 +114,13 @@ export function onContinue(scene: Phaser.Scene, fn: () => void, delayMs = 400) {
       Audio.play('select');
       fn();
     };
-    scene.input.keyboard!.once('keydown', go);
+    // Ignore auto-repeat from a key held down on the previous screen.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      scene.input.keyboard!.off('keydown', onKey);
+      go();
+    };
+    scene.input.keyboard!.on('keydown', onKey);
     scene.input.once('pointerdown', go);
     scene.input.gamepad?.once('down', go);
   });
