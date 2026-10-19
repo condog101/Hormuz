@@ -59,21 +59,21 @@ export const LEVELS: LevelDef[] = [
   },
   {
     n: 3, name: 'LARAK SWARM', durationS: 70, scroll: 80, straitWidth: 340, coastNoise: 52,
-    brief: 'Swarm tactics reported. Zigzagging boats will try to confuse your gunners. Think of it as a posse cut with too many verses.',
+    brief: 'The Bloods run the swarm here: red boats, several at once. The first Crips crews are zigzagging in blue to confuse your gunners. A posse cut with too many verses.',
     artillery: { spacing: 640, fireMinMs: 3200, fireMaxMs: 4500, spread: 55, lead: 0.35 },
     boats: { intervalMs: 2900, speed: 140, zigChance: 0.35, swarmChance: 0.15, swarmMin: 4, swarmMax: 5 },
     minesMs: 0, dronesMs: 0, batterySpacing: 0, driveByMs: 8000, pickupMs: 20000, boss: false,
   },
   {
     n: 4, name: 'HORMUZ ISLAND', durationS: 75, scroll: 85, straitWidth: 320, coastNoise: 56,
-    brief: 'Mines in the lane. Shoot them before they feature on the hull.',
+    brief: 'The Crips run the zigzag crews round Hormuz Island, and somebody dropped mines in the lane. Shoot them before they feature on the hull.',
     artillery: { spacing: 600, fireMinMs: 3000, fireMaxMs: 4200, spread: 50, lead: 0.45 },
     boats: { intervalMs: 2700, speed: 145, zigChance: 0.4, swarmChance: 0.2, swarmMin: 4, swarmMax: 5 },
     minesMs: 3600, dronesMs: 0, batterySpacing: 0, driveByMs: 7500, pickupMs: 20000, boss: false,
   },
   {
     n: 5, name: 'THE NARROWS', durationS: 80, scroll: 90, straitWidth: 290, coastNoise: 56,
-    brief: 'Narrowest point of the strait. Drones overhead. A&R says something big is waiting at the end of the track. They always say that. This time it is true.',
+    brief: "Narrowest point of the strait. Drones overhead. A&R says the Ayatollah's mothership is waiting at the end of the track, both crews on deck. They always say that. This time it is true.",
     artillery: { spacing: 560, fireMinMs: 2800, fireMaxMs: 4000, spread: 46, lead: 0.5 },
     boats: { intervalMs: 2500, speed: 150, zigChance: 0.45, swarmChance: 0.22, swarmMin: 4, swarmMax: 6 },
     minesMs: 3400, dronesMs: 6500, batterySpacing: 0, driveByMs: 7000, pickupMs: 18000, boss: true, haze: 0.5,
@@ -108,7 +108,7 @@ export const LEVELS: LevelDef[] = [
   },
   {
     n: 10, name: 'OUTRO: OPEN SEA', durationS: 90, scroll: 115, straitWidth: 360, coastNoise: 56,
-    brief: 'Open water is in sight. One more fight with the rival label and the album is done. No skits.',
+    brief: "Open water is in sight. One more fight with the Ayatollah's mothership and the album is done. No skits.",
     artillery: { spacing: 450, fireMinMs: 2100, fireMaxMs: 3000, spread: 32, lead: 0.75 },
     boats: { intervalMs: 1800, speed: 175, zigChance: 0.6, swarmChance: 0.35, swarmMin: 5, swarmMax: 6 },
     minesMs: 2500, dronesMs: 4400, batterySpacing: 1000, driveByMs: 4800, pickupMs: 15000, boss: true, openWater: true, haze: 1,
