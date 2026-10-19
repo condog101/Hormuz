@@ -7,7 +7,7 @@ import { Save } from '../systems/Save';
 import { COLORS, panel, text } from '../systems/UI';
 
 /**
- * Callsign + PIN form. Phaser has no text input, so this drives an HTML form
+ * MC name (callsign) + PIN form. Phaser has no text input, so this drives an HTML form
  * (#login in index.html) laid over the canvas.
  */
 export class LoginScene extends Phaser.Scene {
@@ -18,7 +18,7 @@ export class LoginScene extends Phaser.Scene {
   create() {
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
     panel(this, 220, 60, 520, 420);
-    text(this, WIDTH / 2, 100, 'FLEET REGISTRY', 24, COLORS.gold);
+    text(this, WIDTH / 2, 100, 'SIGN TO THE LABEL', 24, COLORS.gold);
 
     const form = document.getElementById('login') as HTMLFormElement;
     const callsign = form.querySelector<HTMLInputElement>('[name=callsign]')!;
@@ -26,7 +26,7 @@ export class LoginScene extends Phaser.Scene {
     const msg = form.querySelector<HTMLElement>('.msg')!;
     const cancel = form.querySelector<HTMLButtonElement>('[data-action=cancel]')!;
     form.hidden = false;
-    msg.textContent = 'New here? Pick a callsign and 4-digit PIN, then REGISTER. Back again? SIGN IN with the same PIN.';
+    msg.textContent = 'New artist? Pick an MC name and a 4-digit PIN, then REGISTER. Already signed? SIGN IN with the same PIN.';
     msg.className = 'msg';
     callsign.value = '';
     pin.value = '';

@@ -9,7 +9,7 @@ const W = 440;
 const H = 156;
 
 /**
- * "INCOMING - COMMANDER IN CHIEF": a portrait slides in and types out a line.
+ * "INCOMING - BIG DON": a portrait slides in and types out a line.
  * The game keeps running underneath; the interruption is the joke.
  */
 export class Popups {
@@ -32,7 +32,7 @@ export class Popups {
     const s = scene;
     this.root = s.add.container(WIDTH + 10, 8).setDepth(DEPTH.popup);
     this.root.add(panel(s, 0, 0, W, H));
-    this.banner = text(s, 14, 18, '● INCOMING - COMMANDER IN CHIEF', 8, COLORS.red, 0).setOrigin(0, 0.5);
+    this.banner = text(s, 14, 18, '● INCOMING - BIG DON', 8, COLORS.red, 0).setOrigin(0, 0.5);
     this.root.add(this.banner);
     this.root.add(s.add.rectangle(14, 30, 132, 116, 0x000000).setOrigin(0));
     this.portrait = s.add.sprite(16, 32, 'potus', 0).setOrigin(0).setScale(2);

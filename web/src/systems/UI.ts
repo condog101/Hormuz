@@ -4,11 +4,12 @@ import { Audio } from './Audio';
 export const FONT = '"Press Start 2P"';
 
 export const COLORS = {
-  text: '#e8f1ff',
-  dim: '#7f93b0',
+  text: '#f3ead7',
+  dim: '#8c8577',
   gold: '#ffd84a',
   red: '#ff4a4a',
   green: '#6dff8f',
+  purple: '#b26bff',
   navy: 0x0d1b33,
 };
 
@@ -27,7 +28,7 @@ export function text(
     .setStroke('#000000', Math.max(2, size / 4));
 }
 
-/** 9-slice navy panel at 2x pixel scale. Coordinates are its top-left. */
+/** 9-slice black-and-gold panel at 2x pixel scale. Coordinates are its top-left. */
 export function panel(scene: Phaser.Scene, x: number, y: number, w: number, h: number) {
   return scene.add.nineslice(x, y, 'ui_panel', 0, w / 2, h / 2, 8, 8, 8, 8).setOrigin(0).setScale(2);
 }

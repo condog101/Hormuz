@@ -94,7 +94,8 @@ export class GameScene extends Phaser.Scene {
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
     this.cameras.main.fadeIn(400);
-    const banner = text(this, WIDTH / 2, HEIGHT / 2 - 40, `LEVEL ${this.level.n}`, 24, COLORS.gold).setDepth(DEPTH.hud);
+    const n = this.level.n;
+    const banner = text(this, WIDTH / 2, HEIGHT / 2 - 40, n > 10 ? `HIDDEN TRACK ${n - 10}` : `TRACK ${n}`, 24, COLORS.purple).setDepth(DEPTH.hud);
     this.tweens.add({ targets: banner, alpha: 0, delay: 1400, duration: 600, onComplete: () => banner.destroy() });
   }
 
@@ -259,8 +260,8 @@ export class GameScene extends Phaser.Scene {
       this.anims.pauseAll();
       this.time.paused = true;
       const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.6).setOrigin(0);
-      const t = text(this, WIDTH / 2, HEIGHT / 2 - 20, 'PAUSED', 24, COLORS.gold);
-      const h = text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q QUIT TO MENU', 8, COLORS.dim);
+      const t = text(this, WIDTH / 2, HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
+      const h = text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim);
       this.pauseUi = this.add.container(0, 0, [bg, t, h]).setDepth(DEPTH.popup + 10);
       this.input.keyboard!.once('keydown-Q', () => {
         if (!this.paused) return;

@@ -22,9 +22,9 @@ export class GameOverScene extends Phaser.Scene {
 
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
     panel(this, 160, 60, 640, 420);
-    text(this, WIDTH / 2, 100, victory ? 'OPEN WATER!' : 'SHIP LOST', 32, victory ? COLORS.gold : COLORS.red);
+    text(this, WIDTH / 2, 100, victory ? 'CERTIFIED PLATINUM' : 'FELL OFF', 32, victory ? COLORS.gold : COLORS.red);
     if (victory) {
-      text(this, WIDTH / 2, 140, 'YOU RAN THE STRAIT. ENDLESS MODE UNLOCKED.', 8, COLORS.green);
+      text(this, WIDTH / 2, 140, 'YOU RAN THE STRAIT. HIDDEN TRACKS UNLOCKED.', 8, COLORS.green);
       Audio.play('clear');
     } else {
       Audio.play('death');
@@ -35,7 +35,7 @@ export class GameOverScene extends Phaser.Scene {
       this,
       WIDTH / 2,
       200,
-      `FINAL SCORE  ${run.score}\n\nLEVEL ${run.level}   KILLS ${run.kills}   TIME ${mins}:${String(secs).padStart(2, '0')}`,
+      `FINAL SCORE  ${run.score}\n\n${run.level > 10 ? `HIDDEN TRACK ${run.level - 10}` : `TRACK ${run.level}`}   KILLS ${run.kills}   TIME ${mins}:${String(secs).padStart(2, '0')}`,
       8,
     );
 
@@ -45,7 +45,7 @@ export class GameOverScene extends Phaser.Scene {
     this.time.addEvent({ delay: 110, repeat: 30, callback: () => portrait.setFrame(Phaser.Math.Between(0, 2)) });
     this.time.delayedCall(3600, () => portrait.setFrame(0));
 
-    const status = text(this, WIDTH / 2, 380, Save.session ? 'TRANSMITTING SCORE...' : 'SIGN IN TO POST SCORES TO THE LEADERBOARD', 8, COLORS.dim);
+    const status = text(this, WIDTH / 2, 380, Save.session ? 'SENDING IT TO THE CHARTS...' : 'SIGN TO THE LABEL TO POST SCORES TO THE CHARTS', 8, COLORS.dim);
     if (Save.session) {
       void submitRun({
         score: run.score,
@@ -53,12 +53,12 @@ export class GameOverScene extends Phaser.Scene {
         levelReached: run.level,
         durationMs: Math.round(run.playMs),
         kills: run.kills,
-      }).then((res) => status.setText(res ? `LEADERBOARD RANK #${res.rank}` : 'SCORE NOT POSTED (OFFLINE?)'));
+      }).then((res) => status.setText(res ? `CHART POSITION #${res.rank}` : 'SCORE NOT POSTED (OFFLINE?)'));
     }
 
     menu(this, WIDTH / 2, 420, [
-      { label: 'TRY AGAIN', action: () => this.scene.start('LevelIntro', { run: newRun(run.mode, run.startLevel) }) },
-      { label: 'MAIN MENU', action: () => this.scene.start('Title') },
+      { label: 'RUN IT BACK', action: () => this.scene.start('LevelIntro', { run: newRun(run.mode, run.startLevel) }) },
+      { label: 'BACK TO THE STUDIO', action: () => this.scene.start('Title') },
     ], 26);
     this.cameras.main.fadeIn(300);
   }

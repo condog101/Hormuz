@@ -1,7 +1,12 @@
-# Hormuz Run
+# Straight Outta Hormuz
 
-Arcade top-down destroyer run through the Strait of Hormuz. Phaser 3 + TypeScript client,
-Cloudflare Worker + D1 backend for callsign profiles and a shared leaderboard.
+Arcade top-down destroyer run through the Strait of Hormuz, dressed as a 90s rap album.
+Big Don, a parody of Donald Trump, calls in from the studio with bars, ad-libs and bleeped
+swearing while you run the strait. Phaser 3 + TypeScript client, Cloudflare Worker + D1
+backend for MC-name profiles and a shared chart (leaderboard).
+
+The deployed Worker, D1 database, package name and localStorage keys still use the original
+`hormuz-run` / `hormuz.*` names so the URL and saved progress survive the rebrand.
 
 ## Run locally
 
@@ -47,10 +52,12 @@ The game is then live at `https://hormuz-run.<your-subdomain>.workers.dev`.
 
 - `web/src/scenes`: Boot, Title, Login, LevelIntro, Game, LevelClear, GameOver, Leaderboard
 - `web/src/entities`: player, enemies, projectiles
-- `web/src/systems`: coastline, spawner, HUD, Commander-in-Chief popups, audio (ZzFX), saves
-- `web/src/data`: `levels.ts` (difficulty table), `quotes.ts` (parody lines), `balance.ts`
+- `web/src/systems`: coastline, spawner, HUD, Big Don popups (typewriter + bleeps), ad-libs, audio (ZzFX), saves
+- `web/src/data`: `levels.ts` (tracklist and difficulty table), `quotes.ts` (Big Don's line bank), `balance.ts`
 - `shared/`: progress merge and score plausibility, used by both client and Worker
 - `worker/`: API routes, PIN hashing, D1 queries, migrations
 - `tools/sprites`: Pillow sprite generator
 
-The Commander-in-Chief lines are original satire written for this game; none are real quotes.
+Big Don is a parody of Donald Trump. Every line is fictional satire written for this game; none
+are real quotes, and no real lyrics are quoted. Swear words are written as `{word}` in
+`quotes.ts` and always rendered bleeped.

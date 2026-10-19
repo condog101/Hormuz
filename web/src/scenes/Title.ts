@@ -30,8 +30,10 @@ export class TitleScene extends Phaser.Scene {
       repeat: -1,
       onUpdate: () => turret.setPosition(ship.x + 14 * PX * 1.5, ship.y),
     });
-    text(this, WIDTH / 2, 70, 'HORMUZ RUN', 40, COLORS.gold);
-    text(this, WIDTH / 2, 112, 'TWENTY-ONE MILES OF BAD NEIGHBOURHOOD', 8, COLORS.text);
+    text(this, WIDTH / 2, 56, 'STRAIGHT OUTTA', 16, COLORS.text);
+    text(this, WIDTH / 2, 90, 'HORMUZ', 40, COLORS.gold);
+    text(this, WIDTH / 2, 124, 'THE ALBUM. THE STRAIT. THE DON.', 8, COLORS.gold);
+    text(this, WIDTH / 2, 140, 'TWENTY-ONE MILES OF BAD NEIGHBOURHOOD', 8, COLORS.dim);
     this.layer = this.add.container(0, 0);
     this.cameras.main.fadeIn(300);
     this.show(data?.view ?? 'main');
@@ -50,30 +52,32 @@ export class TitleScene extends Phaser.Scene {
   private show(view: View) {
     this.clear();
     const p = Save.progress;
-    const who = Save.session ? `CALLSIGN: ${Save.session.callsign}` : 'NOT SIGNED IN (PROGRESS SAVED ON THIS DEVICE)';
+    const who = Save.session ? `MC: ${Save.session.callsign}` : 'NOT SIGNED TO THE LABEL (PROGRESS SAVED ON THIS DEVICE)';
     this.layer.add(text(this, WIDTH / 2, HEIGHT - 16, who, 8, COLORS.dim));
     if (view === 'main') {
       const cont = p.highestLevel;
       this.currentMenu = menu(this, WIDTH / 2, 180, [
-        { label: cont > 1 ? `CONTINUE - LEVEL ${cont}` : 'START TRANSIT', action: () => this.start('campaign', cont) },
-        { label: 'LEVEL SELECT', action: () => this.show('levels') },
-        { label: p.endlessUnlocked ? 'ENDLESS MODE' : 'ENDLESS (BEAT L10)', action: () => this.start('endless', 11), enabled: p.endlessUnlocked },
-        { label: 'LEADERBOARD', action: () => this.scene.start('Leaderboard') },
-        { label: Save.session ? 'SIGN OUT' : 'SIGN IN / REGISTER', action: () => this.auth() },
-        { label: 'SETTINGS', action: () => this.show('settings') },
-        { label: 'CREDITS', action: () => this.show('credits') },
+        { label: cont > 1 ? `CONTINUE - TRACK ${cont}` : 'PRESS PLAY', action: () => this.start('campaign', cont) },
+        { label: 'TRACKLIST', action: () => this.show('levels') },
+        { label: p.endlessUnlocked ? 'HIDDEN TRACKS' : 'HIDDEN TRACKS (BEAT T10)', action: () => this.start('endless', 11), enabled: p.endlessUnlocked },
+        { label: 'THE CHARTS', action: () => this.scene.start('Leaderboard') },
+        { label: Save.session ? 'LEAVE THE LABEL' : 'SIGN TO THE LABEL', action: () => this.auth() },
+        { label: 'MIXER', action: () => this.show('settings') },
+        { label: 'LINER NOTES', action: () => this.show('credits') },
       ]);
       this.layer.add(
         text(this, WIDTH / 2, 410, 'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE', 8, COLORS.dim),
       );
     } else if (view === 'levels') {
-      this.layer.add(panel(this, WIDTH / 2 - 260, 140, 520, 300));
-      this.layer.add(text(this, WIDTH / 2, 164, 'SELECT LEVEL', 16, COLORS.gold));
+      // Album back cover: number, title, running time, best score.
+      this.layer.add(panel(this, WIDTH / 2 - 310, 140, 620, 300));
+      this.layer.add(text(this, WIDTH / 2, 164, 'TRACKLIST', 16, COLORS.gold));
       const items = LEVELS.map((l) => {
         const best = p.levelBest[String(l.n)];
         const unlocked = l.n <= p.highestLevel;
+        const mmss = `${Math.floor(l.durationS / 60)}:${String(l.durationS % 60).padStart(2, '0')}`;
         return {
-          label: `${String(l.n).padStart(2, ' ')} ${l.name.padEnd(16, ' ')} ${unlocked ? (best ? String(best).padStart(6, ' ') : '     -') : ' LOCKED'}`,
+          label: `${String(l.n).padStart(2, '0')} ${l.name.padEnd(16, ' ')} ${mmss}  ${unlocked ? (best ? String(best).padStart(6, ' ') : '     -') : 'LOCKED'}`,
           action: () => this.start('campaign', l.n),
           enabled: unlocked,
         };
@@ -96,7 +100,7 @@ export class TitleScene extends Phaser.Scene {
           this,
           WIDTH / 2,
           260,
-          'HORMUZ RUN\n\nA GAME BY CONNOR\nCODE: CLAUDE   ART: GENERATED + LIBRESPRITE\nFONT: PRESS START 2P (OFL)   SFX: ZZFX\n\nSATIRE. ALL COMMANDER-IN-CHIEF LINES ARE\nFICTIONAL AND NOT REAL QUOTES.',
+          'STRAIGHT OUTTA HORMUZ\n\nA GAME BY CONNOR\nCODE: CLAUDE   ART: GENERATED + LIBRESPRITE\nFONT: PRESS START 2P (OFL)   SFX + BEATS: ZZFX\n\nBIG DON IS A PARODY OF DONALD TRUMP.\nEVERY LINE IS FICTIONAL SATIRE, NOT A REAL QUOTE.\nNO REAL LYRICS WERE HARMED.',
           8,
           COLORS.text,
         ),

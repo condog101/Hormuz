@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hormuz Run</title>
-    <meta name="description" content="Arcade destroyer run through the Strait of Hormuz." />
+    <title>Straight Outta Hormuz</title>
+    <meta name="description" content="Straight Outta Hormuz: a 90s-rap-album arcade destroyer run through the Strait of Hormuz, featuring Big Don." />
     <link rel="icon" href="assets/sprites/hud_icons.png" />
     <style>
       @font-face {
@@ -15,7 +15,7 @@
       html, body {
         margin: 0;
         height: 100%;
-        background: #05070d;
+        background: #000000;
         overflow: hidden;
         font-family: 'Press Start 2P', monospace;
       }
@@ -30,7 +30,7 @@
         display: flex;
         flex-direction: column;
         gap: 14px;
-        color: #e8f1ff;
+        color: #f3ead7;
         font-size: 12px;
       }
       #login[hidden] { display: none; }
@@ -39,9 +39,9 @@
         font: inherit;
         font-size: 16px;
         padding: 10px;
-        background: #05070d;
+        background: #000000;
         color: #ffd84a;
-        border: 2px solid #5a6d8c;
+        border: 2px solid #8c8577;
         outline: none;
       }
       #login input:focus { border-color: #ffd84a; }
@@ -51,20 +51,20 @@
         font: inherit;
         font-size: 11px;
         padding: 10px 6px;
-        background: #1d2b46;
-        color: #e8f1ff;
-        border: 2px solid #5a6d8c;
+        background: #141210;
+        color: #f3ead7;
+        border: 2px solid #8c8577;
         cursor: pointer;
       }
       #login button:hover, #login button:focus { border-color: #ffd84a; color: #ffd84a; }
-      #login .msg { font-size: 9px; line-height: 1.6; color: #7f93b0; min-height: 3em; }
+      #login .msg { font-size: 9px; line-height: 1.6; color: #8c8577; min-height: 3em; }
       #login .msg.error { color: #ff4a4a; }
     </style>
   </head>
   <body>
     <div id="game"></div>
     <form id="login" hidden autocomplete="off">
-      <label>CALLSIGN
+      <label>MC NAME
         <input name="callsign" maxlength="16" minlength="3" pattern="[A-Za-z0-9_ ]{3,16}" required spellcheck="false" />
       </label>
       <label>4-DIGIT PIN

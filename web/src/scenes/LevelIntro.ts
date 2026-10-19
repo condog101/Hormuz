@@ -14,7 +14,7 @@ export class LevelIntroScene extends Phaser.Scene {
     const L = getLevel(run.level);
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.5);
     panel(this, 120, 90, 720, 360);
-    text(this, WIDTH / 2, 130, run.level > 10 ? 'ENDLESS' : `LEVEL ${L.n} OF 10`, 8, COLORS.dim);
+    text(this, WIDTH / 2, 130, run.level > 10 ? 'HIDDEN TRACK' : `TRACK ${L.n} OF 10`, 8, COLORS.dim);
     text(this, WIDTH / 2, 164, L.name, 24, COLORS.gold);
     text(this, WIDTH / 2, 220, L.brief, 8, COLORS.text).setWordWrapWidth(620);
 
@@ -27,13 +27,13 @@ export class LevelIntroScene extends Phaser.Scene {
     if (L.dronesMs) threats.push(['drone', 0]);
     if (L.batterySpacing) threats.push(['battery', 0]);
     if (L.boss) threats.push(['boss', 0]);
-    text(this, WIDTH / 2, 268, 'EXPECTED THREATS', 8, COLORS.red);
+    text(this, WIDTH / 2, 268, 'FEATURING', 8, COLORS.red);
     const spacing = 80;
     const x0 = WIDTH / 2 - ((threats.length - 1) * spacing) / 2;
     threats.forEach(([key, f], i) => this.add.image(x0 + i * spacing, 310, key, f).setScale(PX));
 
     text(this, WIDTH / 2, 370, `SCORE ${run.score}   LIVES ${run.lives}`, 8, COLORS.text);
-    const go = text(this, WIDTH / 2, 410, 'PRESS ANY KEY TO SAIL', 16, COLORS.gold);
+    const go = text(this, WIDTH / 2, 410, 'PRESS ANY KEY TO DROP', 16, COLORS.gold);
     this.tweens.add({ targets: go, alpha: 0.2, yoyo: true, repeat: -1, duration: 500 });
     this.cameras.main.fadeIn(250);
     onContinue(this, () => this.scene.start('Game', { run }), 250);
