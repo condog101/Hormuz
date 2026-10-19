@@ -3,9 +3,10 @@
 All helpers draw straight onto RGBA Pillow images with no anti-aliasing so the
 results stay crisp under nearest-neighbour scaling.
 """
+import os
 import random
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from palette import C
 
@@ -199,3 +200,60 @@ def blob(img, cx, cy, r, colors, seed=0, density=1.0):
             if d <= r and rnd.random() <= density:
                 band = min(n - 1, int(d / max(r, 0.01) * n))
                 px(img, x, y, colors[band])
+
+
+# ---------------------------------------------------------------------------
+# Text
+
+_GLYPHS = {
+    "A": ".#. #.# ### #.# #.#", "B": "##. #.# ##. #.# ##.", "C": ".## #.. #.. #.. .##",
+    "D": "##. #.# #.# #.# ##.", "E": "### #.. ##. #.. ###", "F": "### #.. ##. #.. #..",
+    "G": ".## #.. #.# #.# .##", "H": "#.# #.# ### #.# #.#", "I": "### .#. .#. .#. ###",
+    "J": "..# ..# ..# #.# .#.", "K": "#.# #.# ##. #.# #.#", "L": "#.. #.. #.. #.. ###",
+    "M": "#.# ### #.# #.# #.#", "N": "##. #.# #.# #.# #.#", "O": ".#. #.# #.# #.# .#.",
+    "P": "##. #.# ##. #.. #..", "Q": ".#. #.# #.# ### .##", "R": "##. #.# ##. #.# #.#",
+    "S": ".## #.. .#. ..# ##.", "T": "### .#. .#. .#. .#.", "U": "#.# #.# #.# #.# ###",
+    "V": "#.# #.# #.# #.# .#.", "W": "#.# #.# #.# ### #.#", "X": "#.# #.# .#. #.# #.#",
+    "Y": "#.# #.# .#. .#. .#.", "Z": "### ..# .#. #.. ###", "0": ".#. #.# #.# #.# .#.",
+    "1": ".#. ##. .#. .#. ###", "2": "##. ..# .#. #.. ###", "3": "##. ..# .#. ..# ##.",
+    "4": "#.# #.# ### ..# ..#", "5": "### #.. ##. ..# ##.", "6": ".## #.. ### #.# ###",
+    "7": "### ..# .#. .#. .#.", "8": "### #.# ### #.# ###", "9": "### #.# ### ..# ##.",
+    "$": ".#. ### ##. .## ###", ".": "... ... ... ... .#.", "-": "... ... ### ... ...",
+    "!": ".#. .#. .#. ... .#.", "'": ".#. .#. ... ... ...", "/": "..# ..# .#. #.. #..",
+    " ": "... ... ... ... ...",
+}
+
+
+def tiny_text_width(s):
+    return len(s) * 4 - 1
+
+
+def tiny_text(img, x, y, s, c):
+    """3x5 pixel capitals with a 1px gap. Returns the width drawn."""
+    for i, ch in enumerate(s.upper()):
+        rows = _GLYPHS.get(ch, _GLYPHS[" "]).split()
+        for ry, row in enumerate(rows):
+            for rx, bit in enumerate(row):
+                if bit == "#":
+                    px(img, x + i * 4 + rx, y + ry, c)
+    return tiny_text_width(s)
+
+
+FONT_PATH = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "web", "public", "assets", "fonts", "PressStart2P-Regular.ttf")
+)
+
+
+def font_text(img, x, y, s, size, c):
+    """Press Start 2P text with no anti-aliasing (sizes that are multiples of 8 are pixel-exact)."""
+    f = ImageFont.truetype(FONT_PATH, size)
+    d = ImageDraw.Draw(img)
+    d.fontmode = "1"
+    d.text((x, y), s, font=f, fill=c)
+    return d.textbbox((x, y), s, font=f)
+
+
+def font_text_width(s, size):
+    f = ImageFont.truetype(FONT_PATH, size)
+    l, _, r, _ = ImageDraw.Draw(new(1, 1)).textbbox((0, 0), s, font=f)
+    return r - l

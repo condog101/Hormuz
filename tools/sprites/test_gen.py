@@ -35,12 +35,14 @@ EXPECTED = {
     "missile": (16, 6, 2),
     "boss": (48, 20, 3),
     "pickup": (12, 12, 2),
-    "potus": (64, 64, 4),
+    "potus": (64, 64, 5),
     "ui_panel": (48, 48, 1),
     "hud_icons": (16, 16, 6),
     "tiles": (16, 16, 16),
+    "title_logo": (232, 104, 1),
+    "advisory": (48, 32, 1),
 }
-OPAQUE = {"tiles", "potus"}
+OPAQUE = {"tiles", "potus", "title_logo", "advisory"}
 
 
 def main():

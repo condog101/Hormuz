@@ -1,4 +1,5 @@
-"""Arleigh Burke-class destroyer, top-down, bow to the right. Turret drawn separately."""
+"""USS NOTORIOUS: Arleigh Burke-class destroyer, top-down, bow to the right, with a candy-red
+racing stripe, chrome VLS lids and a gold hull number. Turret drawn separately."""
 from draw import (
     blob, bevel, darken, disc, dither, ellipse, fade, frame_rect, new, outline, paste, px, rect, ring, rng, rotate,
     strip, tint,
@@ -35,11 +36,14 @@ def hull():
         for y in range(CY - hw, CY + hw):
             img.putpixel((x, y), C["hull"])
     bevel(img, light=0.18, dark=-0.32)
-    # Bow knuckle line and a faint centreline weld seam
+    # Bow knuckle line
     for x in range(47, 60):
         px(img, x, CY - 1, C["hull_lt"])
+    # candy-red racing stripe down the hull side, fading into the bow
+    for x in range(4, 54):
+        px(img, x, CY + 4, C["candy"] if x < 46 else C["candy_dk"])
     for x in range(6, 44, 2):
-        px(img, x, CY + 3, C["hull_dk"])
+        px(img, x, CY + 3, C["candy_dk"])
     return img
 
 
@@ -47,7 +51,7 @@ def vls(img, x0, y0, cols, rows):
     rect(img, x0, y0, x0 + cols * 2, y0 + rows * 2, C["hull_dk"])
     for cx in range(cols):
         for cy in range(rows):
-            px(img, x0 + 1 + cx * 2, y0 + 1 + cy * 2, C["deck"])
+            px(img, x0 + 1 + cx * 2, y0 + 1 + cy * 2, C["chrome"])
 
 
 def superstructure(img):
@@ -107,9 +111,11 @@ def build_base():
     px(img, 54, 13, C["deck"])
     px(img, 56, 11, C["black"])
     px(img, 56, 12, C["black"])
-    # hull number
-    px(img, 52, 7, C["white"])
-    px(img, 52, 16, C["white"])
+    # gold hull number on both sides of the foredeck
+    rect(img, 50, 8, 53, 8, C["gold"])
+    rect(img, 50, 15, 53, 15, C["gold"])
+    px(img, 51, 8, C["gold_dk"])
+    px(img, 51, 15, C["gold_dk"])
     return outline(img)
 
 

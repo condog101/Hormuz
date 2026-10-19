@@ -1,4 +1,5 @@
-"""Fast-attack-craft mothership. Drawn bow-right, then flipped so it faces LEFT."""
+"""The opps' mothership: fast-attack-craft tender with speaker stacks on deck, a satellite dish
+on the deckhouse and gold trim. Drawn bow-right, then flipped so it faces LEFT."""
 from draw import bevel, blob, disc, flip_h, new, outline, px, rect, ring, rng, strip
 from palette import C
 
@@ -35,18 +36,27 @@ def base():
     # stern well deck / launch ramp for the swarm boats
     rect(img, 2, 6, 7, 13, C["black"])
     rect(img, 3, 7, 6, 12, C["water_dk"])
-    # two parked attack boats on deck
-    for by in (5, 12):
-        rect(img, 9, by, 14, by + 2, C["white"])
-        px(img, 15, by + 1, C["white"])
-        px(img, 11, by + 1, C["olive"])
+    # speaker stacks on the deck: black cabinets, chrome cones, gold badges
+    for by in (3, 13):
+        rect(img, 9, by, 15, by + 3, C["black"])
+        px(img, 10, by + 1, C["chrome"])
+        px(img, 13, by + 1, C["chrome"])
+        px(img, 10, by + 2, C["hull_dk"])
+        px(img, 13, by + 2, C["hull_dk"])
+        px(img, 15, by + 3, C["gold"])
     # deckhouse + bridge
     rect(img, 18, 5, 30, 14, C["hull"])
-    rect(img, 18, 5, 30, 5, C["hull_lt"])
-    rect(img, 18, 5, 18, 14, C["hull_lt"])
+    rect(img, 18, 5, 30, 5, C["gold"])
+    rect(img, 18, 5, 18, 14, C["gold"])
+    rect(img, 18, 14, 30, 14, C["gold_dk"])
     rect(img, 30, 6, 30, 13, C["water_dk"])  # bridge windows
-    rect(img, 23, 8, 25, 11, C["deck"])  # radar mast base
-    rect(img, 22, 9, 26, 10, C["steel"])  # radar bar
+    rect(img, 23, 8, 25, 11, C["deck"])  # mast base
+    # satellite dish on the deckhouse roof
+    disc(img, 25, 9.5, 2.4, C["chrome"])
+    ring(img, 25, 9.5, 2, C["hull_lt"])
+    px(img, 25, 9, C["black"])
+    px(img, 26, 9, C["hull_dk"])
+    px(img, 27, 8, C["black"])
     # flag + green/white/red stripe on the roof (generic hostile marking)
     px(img, 20, 7, C["olive"])
     px(img, 20, 8, C["white"])
@@ -55,9 +65,11 @@ def base():
     disc(img, 36, 9.5, 2.2, C["hull"])
     rect(img, 37, 9, 43, 10, C["deck"])
     ring(img, 36, 9.5, 2, C["deck"])
-    # anti-ship missile canisters either side of the deckhouse
-    rect(img, 13, 3, 17, 4, C["hull_lt"])
-    rect(img, 13, 15, 17, 16, C["hull_lt"])
+    # gold-trimmed missile canisters either side of the deckhouse
+    rect(img, 16, 3, 20, 4, C["hull_lt"])
+    rect(img, 16, 15, 20, 16, C["hull_lt"])
+    px(img, 20, 3, C["gold"])
+    px(img, 20, 16, C["gold"])
     return outline(img)
 
 

@@ -9,6 +9,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   sinking = false;
   flank = false;
   private fireReadyAt = 0;
+  private bobT = 0;
   private wake: Phaser.GameObjects.Particles.ParticleEmitter;
 
   constructor(private scene_: GameScene, x: number, y: number) {
@@ -53,8 +54,12 @@ export class Player extends Phaser.GameObjects.Sprite {
     const [top, bot] = this.scene_.coast.waterBand(this.x - halfW, this.x + halfW);
     this.y = Phaser.Math.Clamp(this.y + move.y * speed * dt, top + 18, bot - 18);
     this.updateFrame();
+    // hydraulics: bounce the drawn sprite (not the hitbox) while on flank speed
+    this.bobT += dt;
+    const bob = this.flank ? Math.sin(this.bobT * 16) * 3 : 0;
+    this.setOrigin(0.5, 0.5 - bob / this.displayHeight);
     const t = this.turretPos;
-    this.turret.setPosition(t.x, t.y).setRotation(aim);
+    this.turret.setPosition(t.x, t.y + bob).setRotation(aim);
     this.wake.setPosition(this.x - 58, this.y);
     this.wake.frequency = this.flank ? 10 : 30;
     this.alpha = this.invulnerable && Math.floor(this.scene_.time.now / 90) % 2 === 0 ? 0.45 : 1;
@@ -74,6 +79,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   sink(onDone: () => void) {
     this.sinking = true;
+    this.setOrigin(0.5);
     this.turret.setVisible(false);
     this.wake.stop();
     this.alpha = 1;

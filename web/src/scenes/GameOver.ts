@@ -43,7 +43,8 @@ export class GameOverScene extends Phaser.Scene {
     const line = renderLine(pickQuote(victory ? 'victory' : 'death', []).text);
     text(this, 312, 252, `"${line}"`, 8, COLORS.text, 0).setOrigin(0, 0).setAlign('left').setWordWrapWidth(450);
     this.time.addEvent({ delay: 110, repeat: 30, callback: () => portrait.setFrame(Phaser.Math.Between(0, 2)) });
-    this.time.delayedCall(3600, () => portrait.setFrame(0));
+    this.time.delayedCall(3600, () => portrait.setFrame(victory ? 4 : 0));
+    this.add.image(172, 468, 'advisory').setOrigin(0, 1).setScale(1.5);
 
     const status = text(this, WIDTH / 2, 380, Save.session ? 'SENDING IT TO THE CHARTS...' : 'SIGN TO THE LABEL TO POST SCORES TO THE CHARTS', 8, COLORS.dim);
     if (Save.session) {

@@ -1,6 +1,6 @@
-"""Shared 32-colour palette for every generated sprite sheet.
+"""Shared 40-colour palette for every generated sprite sheet.
 
-Colours are RGBA tuples. Keep this list at 32 entries so the art stays coherent;
+Colours are RGBA tuples. Keep this list at 40 entries so the art stays coherent;
 LibreSprite users can load these as a palette when touching up sheets.
 """
 
@@ -45,8 +45,17 @@ PALETTE = {
     "smoke": (110, 108, 112, 255),
     "smoke_lt": (168, 166, 168, 255),
     "steel": (150, 176, 206, 255),
+    # album cover: gold, chrome, candy paint, purple, cream
+    "gold": (255, 216, 74, 255),
+    "gold_dk": (184, 140, 30, 255),
+    "chrome": (222, 228, 236, 255),
+    "candy": (210, 24, 48, 255),
+    "candy_dk": (140, 12, 32, 255),
+    "purple": (178, 107, 255, 255),
+    "purple_lt": (214, 170, 255, 255),
+    "cream": (243, 234, 215, 255),
 }
 
-assert len(PALETTE) == 32, len(PALETTE)
+assert len(PALETTE) == 40, len(PALETTE)
 
 C = PALETTE  # short alias for sheet modules

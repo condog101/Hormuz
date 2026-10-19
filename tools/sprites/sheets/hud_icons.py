@@ -1,5 +1,5 @@
-"""HUD icons, 16x16: hull, life, score, CIWS, level flag, speaker."""
-from draw import bevel, disc, ellipse, new, outline, poly, px, rect, strip
+"""HUD icons, 16x16: hull, life, gold record (score), CIWS, microphone, speaker."""
+from draw import bevel, circle, disc, ellipse, new, outline, poly, px, rect, strip
 from palette import C
 
 NAME = "hud_icons"
@@ -30,17 +30,17 @@ def life():
     return outline(img)
 
 
-def star():
+def record():
     img = new(16, 16)
-    pts = []
-    import math
-    for i in range(10):
-        r = 7 if i % 2 == 0 else 3
-        a = -math.pi / 2 + i * math.pi / 5
-        pts.append((7.5 + math.cos(a) * r, 8 + math.sin(a) * r))
-    poly(img, pts, C["fire_yellow"])
-    bevel(img, light=0.4, dark=-0.25)
-    px(img, 6, 6, C["white"])
+    disc(img, 7.5, 8, 6.4, C["gold"])
+    circle(img, 7.5, 8, 5.0, C["black"])
+    circle(img, 7.5, 8, 3.4, C["gold_dk"])
+    disc(img, 7.5, 8, 2.0, C["cream"])
+    px(img, 7, 8, C["black"])
+    px(img, 8, 8, C["black"])
+    bevel(img, light=0.35, dark=-0.25)
+    px(img, 4, 4, C["white"])
+    px(img, 5, 3, C["white"])
     return outline(img)
 
 
@@ -55,15 +55,17 @@ def ciws():
     return outline(img)
 
 
-def flag():
+def mic():
     img = new(16, 16)
-    rect(img, 3, 1, 3, 14, C["hull_lt"])  # pole
-    rect(img, 4, 2, 12, 8, C["white"])
-    for y in (3, 5, 7):
-        rect(img, 4, y, 12, y, C["fire_red"])
-    rect(img, 4, 2, 7, 5, C["suit_lt"])
-    px(img, 5, 3, C["white"])
-    rect(img, 2, 14, 5, 14, C["hull_dk"])
+    ellipse(img, 5, 1, 10, 8, C["chrome"])  # head
+    for y in range(2, 8):
+        for x in range(5, 11):
+            if (x + y) % 2 == 0 and img.getpixel((x, y))[3]:
+                px(img, x, y, C["hull_dk"])
+    rect(img, 6, 8, 9, 10, C["hull_dk"])  # collar
+    rect(img, 7, 10, 8, 13, C["hull"])  # stem
+    rect(img, 5, 14, 10, 14, C["gold"])  # base
+    px(img, 6, 3, C["white"])
     return outline(img)
 
 
@@ -81,4 +83,4 @@ def speaker():
 
 
 def build():
-    return strip([hull(), life(), star(), ciws(), flag(), speaker()])
+    return strip([hull(), life(), record(), ciws(), mic(), speaker()])

@@ -29,6 +29,8 @@ const SHEETS: [string, number, number][] = [
   ['ui_panel', 48, 48],
   ['hud_icons', 16, 16],
   ['tiles', 16, 16],
+  ['title_logo', 232, 104],
+  ['advisory', 48, 32],
 ];
 
 export class BootScene extends Phaser.Scene {
@@ -38,7 +40,7 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     const bar = this.add.rectangle(480, 290, 0, 8, 0xffd84a).setOrigin(0, 0.5);
-    this.add.rectangle(480, 290, 304, 12).setStrokeStyle(2, 0x5a6d8c);
+    this.add.rectangle(480, 290, 304, 12).setStrokeStyle(2, 0xb88c1e);
     bar.x = 480 - 150;
     text(this, 480, 250, 'LOADING', 16, COLORS.text);
     this.load.on('progress', (v: number) => (bar.width = 300 * v));

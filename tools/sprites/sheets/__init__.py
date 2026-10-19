@@ -1,5 +1,6 @@
 """Registry of sprite sheet modules. Each exposes NAME, FRAME=(w, h), FRAMES and build()."""
 from . import (
+    advisory,
     artillery,
     battery,
     boat_a,
@@ -17,6 +18,7 @@ from . import (
     smoke,
     splash,
     tiles,
+    title_logo,
     turret,
     ui_panel,
 )
@@ -45,4 +47,6 @@ SHEETS = [
     ui_panel,
     hud_icons,
     tiles,
+    title_logo,
+    advisory,
 ]

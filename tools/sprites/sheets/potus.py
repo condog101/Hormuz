@@ -1,38 +1,68 @@
-"""Satirical 'Commander in Chief' caricature bust for the popup portrait.
+"""Big Don: satirical caricature bust for the popup portrait (parody of Donald Trump).
 
-A generic cartoon politician: orange tan, pale goggle-tan around the eyes,
-enormous swept golden hair, dark suit and an extra-long red tie.
-Frames: 0 mouth closed, 1 half open, 2 wide open, 3 blink.
+Orange tan, pale goggle-tan around the eyes, enormous swept golden hair, dark
+suit and an extra-long red tie, now with a red bandana, two gold rope chains
+with a $ medallion, a gold grill and a studio backdrop (foam wall, mic, ON AIR).
+Frames: 0 mouth closed, 1 half open, 2 wide open, 3 blink, 4 shades + grin.
 """
 from draw import (
-    bevel, dither, disc, ellipse, new, outline, paste, poly, px, rect, rng, strip,
+    bevel, dither, disc, ellipse, new, outline, paste, poly, px, rect, rng, strip, tiny_text,
 )
 from palette import C
 
 NAME = "potus"
 FRAME = (64, 64)
-FRAMES = 4
+FRAMES = 5
+
+FOAM = (34, 32, 40, 255)
+FOAM_LT = (52, 50, 60, 255)
 
 
 def background():
-    img = new(64, 64, C["water_dk"])
-    # vertical gradient into deep navy
-    for y in range(64):
-        for x in range(64):
-            if y > 40 and (x + y) % 2 == 0:
-                px(img, x, y, C["suit"])
-            elif y > 52:
-                px(img, x, y, C["suit"])
-    # a few stars like a press-room backdrop
-    rnd = rng(3)
-    for _ in range(9):
-        x, y = rnd.randint(3, 60), rnd.randint(3, 30)
-        px(img, x, y, C["steel"])
-    rect(img, 0, 0, 63, 0, C["steel"])
+    """Recording studio: acoustic foam wall, a mic on a stand at the left, an ON AIR lamp."""
+    img = new(64, 64, C["black"])
+    # foam wedges: 8px cells with a lit diagonal ridge
+    for cy in range(0, 64, 8):
+        for cx in range(0, 64, 8):
+            rect(img, cx, cy, cx + 7, cy + 7, FOAM)
+            for k in range(8):
+                px(img, cx + k, cy + k, FOAM_LT)
+            px(img, cx, cy, C["black"])
+    # a darker floor line where the desk would be
+    rect(img, 0, 52, 63, 63, C["black"])
+    dither(img, 0, 52, 63, 63, FOAM)
+    # mic on a boom stand, left
+    rect(img, 6, 34, 6, 63, C["hull_dk"])
+    rect(img, 5, 33, 7, 33, C["hull"])
+    rect(img, 7, 24, 7, 33, C["hull"])
+    ellipse(img, 3, 18, 11, 28, C["chrome"])
+    dither(img, 4, 19, 10, 27, C["hull_dk"])
+    rect(img, 6, 28, 8, 30, C["hull_dk"])
+    px(img, 5, 20, C["white"])
+    # ON AIR lamp, top right (stacked so the hair does not cover it)
+    rect(img, 50, 1, 63, 15, C["black"])
+    rect(img, 51, 2, 62, 14, C["candy"])
+    tiny_text(img, 53, 3, "ON", C["cream"])
+    tiny_text(img, 51, 9, "AIR", C["cream"])
+    px(img, 51, 2, C["fire_orange"])
+    # frame edge
+    rect(img, 0, 0, 63, 0, C["gold_dk"])
+    rect(img, 0, 0, 0, 63, C["gold_dk"])
     rect(img, 0, 63, 63, 63, C["black"])
-    rect(img, 0, 0, 0, 63, C["steel"])
     rect(img, 63, 0, 63, 63, C["black"])
     return img
+
+
+def chains(img):
+    """Two gold rope chains over the shirt V, with a $ medallion on the longer one."""
+    for y0, depth in ((47, 6), (48, 10)):
+        for i, x in enumerate(range(21, 44)):
+            t = (x - 32) / 11.0
+            y = y0 + round(depth * (1 - t * t))
+            px(img, x, y, C["gold"] if i % 2 == 0 else C["gold_dk"])
+    disc(img, 32, 59, 3, C["gold"])
+    px(img, 30, 58, C["cream"])
+    tiny_text(img, 31, 57, "$", C["gold_dk"])
 
 
 def body():
@@ -56,6 +86,7 @@ def body():
         px(img, 32, y, (160, 20, 34, 255))
     # neck
     rect(img, 26, 40, 38, 46, C["skin_dk"])
+    chains(img)
     return img
 
 
@@ -109,6 +140,29 @@ def eyes(img, blink):
             rect(img, cx - 2, 27, cx + 1, 27, C["skin_dk"])  # heavy lids
 
 
+def shades(img):
+    """Big black shades with a chrome glint; drawn over the eyes."""
+    for x0 in (20, 34):
+        rect(img, x0, 26, x0 + 9, 31, C["black"])
+        px(img, x0, 26, (0, 0, 0, 0))
+        px(img, x0 + 9, 26, (0, 0, 0, 0))
+        px(img, x0, 31, (0, 0, 0, 0))
+        px(img, x0 + 9, 31, (0, 0, 0, 0))
+        rect(img, x0 + 1, 26, x0 + 8, 26, C["hull_dk"])
+        px(img, x0 + 2, 27, C["chrome"])
+        px(img, x0 + 3, 27, C["chrome"])
+        px(img, x0 + 2, 28, C["hull_lt"])
+    rect(img, 30, 28, 33, 28, C["black"])  # bridge
+    rect(img, 17, 27, 19, 27, C["black"])  # arms
+    rect(img, 44, 27, 47, 27, C["black"])
+
+
+def grill(img, x0, x1, y):
+    """Gold teeth with darker separators."""
+    for x in range(x0, x1 + 1):
+        px(img, x, y, C["gold"] if (x - x0) % 2 == 0 else C["gold_dk"])
+
+
 def mouth(img, state):
     if state == 0:  # pursed, the classic pout
         ellipse(img, 28, 37, 36, 41, C["fire_red"])
@@ -117,12 +171,19 @@ def mouth(img, state):
     elif state == 1:
         ellipse(img, 27, 37, 37, 41, C["fire_red"])
         rect(img, 29, 38, 35, 40, C["black"])
-        rect(img, 30, 38, 34, 38, C["white"])
-    else:
+        grill(img, 30, 34, 38)
+    elif state == 2:
         ellipse(img, 26, 36, 38, 43, C["fire_red"])
         ellipse(img, 27, 37, 37, 42, C["black"])
-        rect(img, 29, 37, 35, 37, C["white"])
+        grill(img, 29, 35, 37)
         ellipse(img, 29, 40, 35, 42, C["tie"])  # tongue
+    else:  # wide grin, all grill
+        ellipse(img, 25, 36, 39, 42, C["fire_red"])
+        rect(img, 27, 38, 37, 40, C["black"])
+        grill(img, 27, 37, 38)
+        grill(img, 28, 36, 39)
+        px(img, 25, 38, C["skin_dk"])
+        px(img, 39, 38, C["skin_dk"])
 
 
 def hair(img):
@@ -153,18 +214,38 @@ def hair(img):
         px(img, x, 6 + (1 if x < 26 or x > 32 else 0), hl)
 
 
-def figure(state, blink=False):
+def bandana(img):
+    """Red bandana across the brow, knotted on the right, under the forelock."""
+    rect(img, 18, 22, 46, 24, C["candy"])
+    dither(img, 19, 22, 45, 24, C["candy_dk"], phase=1)
+    rect(img, 18, 22, 46, 22, C["candy_dk"])
+    # knot and tails
+    rect(img, 46, 21, 49, 25, C["candy"])
+    px(img, 47, 22, C["candy_dk"])
+    poly(img, [(49, 23), (54, 26), (53, 30), (50, 26)], C["candy"])
+    poly(img, [(49, 24), (52, 31), (50, 31), (48, 26)], C["candy_dk"])
+
+
+def figure(state, blink=False, cool=False):
     img = body()
     face(img)
     hair(img)
+    bandana(img)
     eyes(img, blink)
     mouth(img, state)
+    if cool:
+        shades(img)
     return outline(img)
 
 
 def frame(i):
     bg = background()
-    fig = figure(0 if i == 3 else i, blink=(i == 3))
+    if i == 3:
+        fig = figure(0, blink=True)
+    elif i == 4:
+        fig = figure(3, cool=True)
+    else:
+        fig = figure(i)
     paste(bg, fig, 0, 0)
     return bg
 
