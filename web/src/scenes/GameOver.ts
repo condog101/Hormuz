@@ -39,9 +39,9 @@ export class GameOverScene extends Phaser.Scene {
       8,
     );
 
-    const portrait = this.add.sprite(230, 300, 'potus', 0).setScale(2).setCrop(0, 0, 64, 56);
+    const portrait = this.add.sprite(196, 244, 'potus', 0).setOrigin(0).setScale(1.5).setCrop(0, 0, 64, 56);
     const line = pickQuote(victory ? 'victory' : 'death', []).text;
-    text(this, 300, 270, `"${line}"`, 8, COLORS.text, 0).setOrigin(0, 0).setWordWrapWidth(460);
+    text(this, 312, 252, `"${line}"`, 8, COLORS.text, 0).setOrigin(0, 0).setAlign('left').setWordWrapWidth(450);
     this.time.addEvent({ delay: 110, repeat: 30, callback: () => portrait.setFrame(Phaser.Math.Between(0, 2)) });
     this.time.delayedCall(3600, () => portrait.setFrame(0));
 

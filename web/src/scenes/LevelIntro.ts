@@ -36,6 +36,6 @@ export class LevelIntroScene extends Phaser.Scene {
     const go = text(this, WIDTH / 2, 410, 'PRESS ANY KEY TO SAIL', 16, COLORS.gold);
     this.tweens.add({ targets: go, alpha: 0.2, yoyo: true, repeat: -1, duration: 500 });
     this.cameras.main.fadeIn(250);
-    onContinue(this, () => this.scene.start('Game', { run }), 500);
+    onContinue(this, () => this.scene.start('Game', { run }), 250);
   }
 }

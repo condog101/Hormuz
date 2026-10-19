@@ -33,13 +33,14 @@ interface Column {
 /**
  * Procedural coastlines: Iran along the top, Musandam along the bottom. Each 16px
  * column of the level gets a land depth from seeded noise; the land is painted with
- * the tile sheet through a Blitter and recycled as it scrolls past.
+ * pooled tile images in a container that scrolls, recycled as columns leave the screen.
  */
 export class Coastline {
   scrollX = 0;
   private water: Phaser.GameObjects.TileSprite;
-  private blitter: Phaser.GameObjects.Blitter;
-  private live = new Map<number, Phaser.GameObjects.Bob[]>();
+  private land: Phaser.GameObjects.Container;
+  private live = new Map<number, Phaser.GameObjects.Image[]>();
+  private pool: Phaser.GameObjects.Image[] = [];
   private cache = new Map<number, Column>();
   private waterFrame = 0;
   private waterTimer = 0;
@@ -56,7 +57,7 @@ export class Coastline {
       .setOrigin(0)
       .setTileScale(PX)
       .setDepth(DEPTH.water);
-    this.blitter = scene.add.blitter(0, 0, 'tiles').setScale(PX).setDepth(DEPTH.land);
+    this.land = scene.add.container(0, 0).setDepth(DEPTH.land);
     this.refresh();
   }
 
@@ -139,7 +140,7 @@ export class Coastline {
       this.waterFrame = (this.waterFrame + 1) % T.water.length;
       this.water.setFrame(T.water[this.waterFrame]);
     }
-    this.blitter.x = -this.scrollX;
+    this.land.x = -this.scrollX;
     this.refresh();
   }
 
@@ -148,7 +149,7 @@ export class Coastline {
     const c1 = Math.floor((this.scrollX + WIDTH) / TILE) + 1;
     for (const [c, bobs] of this.live) {
       if (c < c0 || c > c1) {
-        for (const b of bobs) b.destroy();
+        for (const img of bobs) this.pool.push(img.setVisible(false));
         this.live.delete(c);
         this.cache.delete(c - 4);
       }
@@ -158,27 +159,36 @@ export class Coastline {
 
   private interiorTile(c: number, row: number, cliff: boolean): number {
     const h = noise1d(c * 31 + row * 977, this.seed + 21, 1.7);
-    if (cliff) return h > 0.3 ? T.rockDark : T.rock;
+    if (cliff) return h > 0.75 ? T.rockDark : T.rock;
     if (h > 0.82) return T.village;
     if (h > 0.45) return T.scrub;
     if (h < -0.4) return T.dune;
     return T.sand;
   }
 
-  private paint(c: number): Phaser.GameObjects.Bob[] {
+  private tile(x: number, y: number, frame: number): Phaser.GameObjects.Image {
+    let img = this.pool.pop();
+    if (!img) {
+      img = this.land.scene.add.image(0, 0, 'tiles', 0).setOrigin(0).setScale(PX);
+      this.land.add(img);
+    }
+    return img.setPosition(x, y).setFrame(frame).setVisible(true);
+  }
+
+  private paint(c: number): Phaser.GameObjects.Image[] {
     const col = this.column(c);
-    const bobs: Phaser.GameObjects.Bob[] = [];
-    const x = c * 16; // blitter coordinates are unscaled
+    const bobs: Phaser.GameObjects.Image[] = [];
+    const x = c * TILE; // container-local: the container itself scrolls
     const rowsTotal = Math.ceil(HEIGHT / TILE);
     for (let r = 0; r < col.top; r++) {
       const frame = r === col.top - 1 ? (col.cliffTop ? T.cliffN : T.shoreN) : this.interiorTile(c, r, col.cliffTop);
-      bobs.push(this.blitter.create(x, r * 16, frame));
+      bobs.push(this.tile(x, r * TILE, frame));
     }
     for (let i = 0; i < col.bot; i++) {
       const r = rowsTotal - col.bot + i;
-      const y = HEIGHT / PX - (col.bot - i) * 16;
+      const y = HEIGHT - (col.bot - i) * TILE;
       const frame = i === 0 ? (col.cliffBot ? T.cliffS : T.shoreS) : this.interiorTile(c, r + 40, col.cliffBot);
-      bobs.push(this.blitter.create(x, y, frame));
+      bobs.push(this.tile(x, y, frame));
     }
     return bobs;
   }

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
-import { CIWS, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WIDTH } from '../data/balance';
+import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WIDTH } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
 import { Boss } from '../entities/Boss';
 import type { Entity } from '../entities/Entity';
@@ -130,11 +130,13 @@ export class GameScene extends Phaser.Scene {
 
   shellLanded(x: number, y: number) {
     const p = this.player;
-    const hit = Math.hypot(p.x - x, (p.y - y) * 1.4) < 40;
+    // The hull is long and thin: measure from the nearest point on its centreline.
+    const cx = Phaser.Math.Clamp(x, p.x - 54, p.x + 54);
+    const hit = Math.hypot(x - cx, y - p.y) < 26;
     if (hit && !p.invulnerable) {
       this.fx.explosion(x, y);
       Audio.play('boom', { volume: 0.8 });
-      this.damagePlayer(22);
+      this.damagePlayer(Math.round(DAMAGE.shell * Math.min(1, 0.55 + 0.05 * this.level.n)));
     } else {
       this.fx.splash(x, y);
       Audio.play('splash', { volume: 0.7 });
