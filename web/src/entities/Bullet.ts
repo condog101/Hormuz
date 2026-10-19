@@ -6,7 +6,7 @@ import { Entity } from './Entity';
 export class HostileBullet extends Entity {
   constructor(game: GameScene, x: number, y: number, private vx: number, private vy: number, damage: number, tint: number) {
     super(game, x, y, 'shell');
-    this.setDepth(DEPTH.air).setTint(tint).setScale(PX * 1.5);
+    this.setDepth(DEPTH.air).setTintFill(tint).setScale(PX * 1.5);
     this.radius = 5;
     this.scrolls = false;
     this.shootable = false;

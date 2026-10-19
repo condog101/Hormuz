@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DAMAGE, DEPTH } from '../data/balance';
+import { DAMAGE, DEPTH, HEIGHT, TILE } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
@@ -81,8 +81,11 @@ export class Lowrider extends Entity {
     }
     const speed = g.scrollSpeed + (this.mode === 'slow' ? 15 : 110);
     this.x -= speed * dt;
-    const ty = g.coast.roadSpot(this.x, this.side);
-    if (ty !== null) this.y += (ty - this.y) * Math.min(1, dt * 4);
+    // Follow the road; where it runs out (cliffs, thin land) stay on the beach just inland of the surf.
+    const c = g.coast;
+    const beach = this.side === 'top' ? Math.max(TILE / 2, c.topEdge(this.x) - TILE / 2) : Math.min(HEIGHT - TILE / 2, c.botEdge(this.x) + TILE / 2);
+    const ty = c.roadSpot(this.x, this.side) ?? beach;
+    this.y += (ty - this.y) * Math.min(1, dt * 4);
     this.warning?.setPosition(this.x, this.y + (this.side === 'top' ? 22 : -22));
     if (this.x < -60) this.remove();
   }

@@ -110,16 +110,18 @@ def cube(open_):
     rect(img, 18, 19, 21, 24, C["black"])
     rect(img, 43, 19, 46, 24, C["black"])
     # flat-brim cap, no logo
-    rect(img, 18, 5, 46, 18, C["black"])  # tall fitted crown
-    for x, y in [(18, 5), (19, 5), (18, 6), (46, 5), (45, 5), (46, 6)]:
+    rect(img, 18, 6, 46, 18, C["black"])  # fitted crown with rounded top corners
+    for x, y in [(18, 6), (19, 6), (20, 6), (18, 7), (18, 8), (46, 6), (45, 6), (44, 6), (46, 7), (46, 8)]:
         px(img, x, y, (0, 0, 0, 0))
+    rect(img, 21, 5, 43, 5, C["black"])
     for y in range(6, 18):
         px(img, 32, y, C["deck"])  # panel seam
     for x in range(21, 30):
         px(img, x, 7, C["deck"])  # crown highlight
-    rect(img, 13, 18, 51, 20, C["black"])  # the brim, dead straight
-    rect(img, 13, 18, 51, 18, C["deck"])
-    px(img, 32, 5, C["deck"])  # button
+    rect(img, 16, 18, 48, 21, C["black"])  # the brim, dead straight, seen edge-on
+    rect(img, 16, 18, 48, 18, C["deck"])
+    rect(img, 17, 21, 47, 21, C["hull_dk"])  # brim underside
+    px(img, 32, 4, C["black"])  # button
     # heavy scowl brows sloping down to the nose
     for i in range(8):
         dy = i // 3
