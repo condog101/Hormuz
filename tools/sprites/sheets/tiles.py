@@ -4,17 +4,20 @@
  6 rock        7 dark rock            8 north shore (land top, water bottom)
  9 south shore (water top, land bottom)            10 cliff north   11 cliff south
 12 scrub on sand   13 village building  14 shallow water   15 surf / foam
+16 coast road      17 road + parked red lowrider            18 road + parked blue lowrider
+19 palm on sand    20 village house with a spray tag        21 wall with red and blue crew tags
+22 album billboard
 
 Shoreline curves use a 16px period so neighbouring edge tiles join seamlessly.
 """
 import math
 
-from draw import dither, new, px, rect, rng, strip
+from draw import disc, dither, new, px, rect, rng, strip, tiny_text
 from palette import C
 
 NAME = "tiles"
 FRAME = (16, 16)
-FRAMES = 16
+FRAMES = 23
 T = 16
 
 
@@ -212,9 +215,108 @@ def surf():
     return img
 
 
+def road():
+    img = speckle(C["deck"], [(C["hull_dk"], 0.12), (C["black"], 0.04)], 16)
+    for x in range(T):
+        px(img, x, 0, C["rock_lt"])  # kerbs
+        px(img, x, 15, C["rock_lt"])
+        if x % 2 == 0:
+            px(img, x, 1, C["sand"])
+            px(img, x, 14, C["ochre"])
+    for x in list(range(2, 6)) + list(range(10, 14)):  # dashed centre line
+        px(img, x, 7, C["sand_lt"])
+        px(img, x, 8, C["sand_lt"])
+    return img
+
+
+def parked_car(paint):
+    """Road tile with a parked lowrider seen from the side (14x6), facing left."""
+    img = road()
+    body, dark = paint
+    x0, y0 = 1, 5
+    rect(img, x0 + 4, y0, x0 + 10, y0 + 1, dark)  # roof
+    rect(img, x0 + 5, y0 + 1, x0 + 9, y0 + 1, C["black"])  # tinted windows
+    rect(img, x0, y0 + 2, x0 + 13, y0 + 4, body)  # body
+    rect(img, x0, y0 + 2, x0 + 13, y0 + 2, dark)
+    rect(img, x0, y0 + 3, x0 + 13, y0 + 3, C["gold"])  # trim line
+    for wx in (x0 + 2, x0 + 10):  # chrome wheels, tucked low
+        rect(img, wx, y0 + 4, wx + 1, y0 + 5, C["black"])
+        px(img, wx, y0 + 5, C["chrome"])
+    px(img, x0, y0 + 3, C["fire_yellow"])  # headlight
+    return img
+
+
+def palm():
+    img = sand()
+    # shadow cast down-right
+    for x, y in [(9, 10), (10, 11), (11, 11), (12, 12), (8, 11), (10, 12)]:
+        px(img, x, y, C["ochre"])
+    # leaning trunk
+    for x, y in [(6, 13), (6, 12), (7, 11), (7, 10), (7, 9), (8, 8)]:
+        px(img, x, y, C["rock"])
+        px(img, x + 1, y, C["rock_dk"])
+    # fronds radiating from the crown at (8, 6)
+    cx, cy = 8, 6
+    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        for k in range(1, 5):
+            px(img, cx + dx * k, cy + dy * k + (1 if k > 2 and dx else 0), C["olive"])
+    for dx, dy in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
+        for k in range(1, 4):
+            px(img, cx + dx * k, cy + dy * k + (1 if k > 2 else 0), C["olive"])
+    px(img, cx, cy, C["rock_lt"])
+    px(img, cx - 1, cy - 1, (140, 150, 80, 255))
+    px(img, cx + 1, cy - 2, (140, 150, 80, 255))
+    return img
+
+
+def tag_a():
+    img = village()
+    tiny_text(img, 3, 5, "SOH", C["candy"])
+    px(img, 4, 10, C["purple"])  # drips
+    px(img, 4, 11, C["purple"])
+    px(img, 12, 10, C["purple"])
+    return img
+
+
+def tag_b():
+    img = sand()
+    rect(img, 1, 6, 15, 12, C["ochre"])  # shadow
+    rect(img, 0, 3, 14, 10, C["foam"])  # whitewashed wall
+    rect(img, 0, 3, 14, 3, C["white"])
+    rect(img, 0, 10, 14, 10, C["sand_lt"])
+    # red tag (left) and blue tag (right): loose squiggles
+    for x, y in [(1, 6), (2, 5), (3, 6), (4, 7), (5, 6), (3, 8), (2, 8), (5, 8)]:
+        px(img, x, y, C["candy"])
+    for x, y in [(8, 5), (9, 6), (10, 5), (11, 6), (12, 7), (9, 8), (10, 8), (12, 5), (13, 6)]:
+        px(img, x, y, C["water_lt"])
+    px(img, 2, 9, C["candy_dk"])
+    px(img, 11, 9, C["water"])
+    return img
+
+
+def billboard():
+    img = sand()
+    rect(img, 3, 11, 3, 14, C["rock_dk"])  # posts
+    rect(img, 12, 11, 12, 14, C["rock_dk"])
+    px(img, 4, 14, C["ochre"])
+    px(img, 13, 14, C["ochre"])
+    rect(img, 1, 0, 14, 11, C["black"])  # board
+    rect(img, 1, 11, 14, 11, C["gold_dk"])
+    disc(img, 11.5, 2.5, 1.8, C["gold"])  # gold record
+    px(img, 11, 2, C["black"])
+    px(img, 12, 2, C["black"])
+    px(img, 10, 1, C["cream"])
+    px(img, 3, 2, C["candy"])  # advisory dot
+    px(img, 4, 2, C["white"])
+    tiny_text(img, 2, 6, "DON", C["gold"])
+    return img
+
+
 def build():
     tiles = [water(0), water(1), water(2), water(3), sand(), dune(), rock(), rock_dark(),
-             north_shore(), south_shore(), cliff_north(), cliff_south(), scrub(), village(), shallow(), surf()]
+             north_shore(), south_shore(), cliff_north(), cliff_south(), scrub(), village(), shallow(), surf(),
+             road(), parked_car((C["candy"], C["candy_dk"])), parked_car((C["water_lt"], C["water"])),
+             palm(), tag_a(), tag_b(), billboard()]
     out = strip(tiles)
     assert all(p[3] == 255 for p in out.getdata()), "tiles must be fully opaque"
     return out

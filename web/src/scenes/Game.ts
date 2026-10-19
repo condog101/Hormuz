@@ -103,6 +103,9 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
     Music.play('game');
     this.cameras.main.fadeIn(400);
+    if (this.level.haze) {
+      this.add.image(0, 0, 'haze').setOrigin(0).setDisplaySize(WIDTH, HEIGHT).setAlpha(0.16 * this.level.haze).setDepth(DEPTH.fx + 5);
+    }
     const n = this.level.n;
     const banner = text(this, WIDTH / 2, HEIGHT / 2 - 40, n > 10 ? `HIDDEN TRACK ${n - 10}` : `TRACK ${n}`, 24, COLORS.purple).setDepth(DEPTH.hud);
     this.tweens.add({ targets: banner, alpha: 0, delay: 1400, duration: 600, onComplete: () => banner.destroy() });

@@ -36,6 +36,8 @@ export interface LevelDef {
   boss: boolean;
   /** Final stretch opens into the Gulf of Oman. */
   openWater?: boolean;
+  /** Golden-hour haze over the whole screen, 0..1 (cosmetic). */
+  haze?: number;
 }
 
 export const LEVELS: LevelDef[] = [
@@ -72,42 +74,42 @@ export const LEVELS: LevelDef[] = [
     brief: 'Narrowest point of the strait. Drones overhead. A&R says something big is waiting at the end of the track. They always say that. This time it is true.',
     artillery: { spacing: 560, fireMinMs: 2800, fireMaxMs: 4000, spread: 46, lead: 0.5 },
     boats: { intervalMs: 2500, speed: 150, zigChance: 0.45, swarmChance: 0.22, swarmMin: 4, swarmMax: 6 },
-    minesMs: 3400, dronesMs: 6500, batterySpacing: 0, pickupMs: 18000, boss: true,
+    minesMs: 3400, dronesMs: 6500, batterySpacing: 0, pickupMs: 18000, boss: true, haze: 0.5,
   },
   {
     n: 6, name: 'MUSANDAM CLIFFS', durationS: 80, scroll: 95, straitWidth: 280, coastNoise: 60,
     brief: 'Cliffs on both sides. Nowhere to hide and nowhere to turn. The acoustics are incredible, which is bad news for a boat.',
     artillery: { spacing: 520, fireMinMs: 2600, fireMaxMs: 3800, spread: 42, lead: 0.55 },
     boats: { intervalMs: 2300, speed: 155, zigChance: 0.5, swarmChance: 0.25, swarmMin: 4, swarmMax: 6 },
-    minesMs: 3200, dronesMs: 5800, batterySpacing: 0, pickupMs: 18000, boss: false,
+    minesMs: 3200, dronesMs: 5800, batterySpacing: 0, pickupMs: 18000, boss: false, haze: 0.5,
   },
   {
     n: 7, name: 'MISSILE ALLEY', durationS: 85, scroll: 100, straitWidth: 280, coastNoise: 60,
     brief: 'Anti-ship missile batteries online. When the klaxon sounds, CIWS or dodge. The missiles do not care about your flow.',
     artillery: { spacing: 520, fireMinMs: 2500, fireMaxMs: 3600, spread: 40, lead: 0.6 },
     boats: { intervalMs: 2200, speed: 160, zigChance: 0.5, swarmChance: 0.25, swarmMin: 4, swarmMax: 6 },
-    minesMs: 3000, dronesMs: 5400, batterySpacing: 1400, pickupMs: 17000, boss: false,
+    minesMs: 3000, dronesMs: 5400, batterySpacing: 1400, pickupMs: 17000, boss: false, haze: 0.5,
   },
   {
     n: 8, name: 'G.O.A.T. ISLAND', durationS: 85, scroll: 105, straitWidth: 300, coastNoise: 64,
     brief: 'Everything they have, all at once. Big Don insists the island is named after him. The goats disagree.',
     artillery: { spacing: 480, fireMinMs: 2400, fireMaxMs: 3400, spread: 38, lead: 0.65 },
     boats: { intervalMs: 2000, speed: 165, zigChance: 0.55, swarmChance: 0.3, swarmMin: 5, swarmMax: 6 },
-    minesMs: 2800, dronesMs: 5000, batterySpacing: 1200, pickupMs: 17000, boss: false,
+    minesMs: 2800, dronesMs: 5000, batterySpacing: 1200, pickupMs: 17000, boss: false, haze: 1,
   },
   {
     n: 9, name: 'RAS AL KUH', durationS: 90, scroll: 110, straitWidth: 320, coastNoise: 64,
     brief: 'Last line of shore defences. Their gunners are the best they have left, so this is the diss track. Make it personal.',
     artillery: { spacing: 450, fireMinMs: 2200, fireMaxMs: 3200, spread: 34, lead: 0.7 },
     boats: { intervalMs: 1900, speed: 170, zigChance: 0.6, swarmChance: 0.3, swarmMin: 5, swarmMax: 6 },
-    minesMs: 2600, dronesMs: 4600, batterySpacing: 1100, pickupMs: 16000, boss: false,
+    minesMs: 2600, dronesMs: 4600, batterySpacing: 1100, pickupMs: 16000, boss: false, haze: 1,
   },
   {
     n: 10, name: 'OUTRO: OPEN SEA', durationS: 90, scroll: 115, straitWidth: 360, coastNoise: 56,
     brief: 'Open water is in sight. One more fight with the rival label and the album is done. No skits.',
     artillery: { spacing: 450, fireMinMs: 2100, fireMaxMs: 3000, spread: 32, lead: 0.75 },
     boats: { intervalMs: 1800, speed: 175, zigChance: 0.6, swarmChance: 0.35, swarmMin: 5, swarmMax: 6 },
-    minesMs: 2500, dronesMs: 4400, batterySpacing: 1000, pickupMs: 15000, boss: true, openWater: true,
+    minesMs: 2500, dronesMs: 4400, batterySpacing: 1000, pickupMs: 15000, boss: true, openWater: true, haze: 1,
   },
 ];
 
@@ -145,5 +147,6 @@ export function getLevel(n: number): LevelDef {
     batterySpacing: Math.max(700, base.batterySpacing * f),
     boss: n % 5 === 0,
     openWater: false,
+    haze: 1,
   };
 }

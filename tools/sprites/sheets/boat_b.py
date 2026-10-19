@@ -1,4 +1,5 @@
-"""Zig-zagging attack boat: angular red/black hull with a twin-engine stern."""
+"""Crips zig-zag attack boat: angular blue/black hull with steel highlights, a twin-engine stern
+and a blue pennant."""
 from draw import bevel, new, outline, poly, px, rect, strip
 from palette import C
 
@@ -9,8 +10,10 @@ FRAMES = 2
 
 def body():
     img = new(16, 8)
-    poly(img, [(2, 1), (9, 1), (14, 3), (14, 4), (9, 6), (2, 6)], C["fire_red"])
+    poly(img, [(2, 1), (9, 1), (14, 3), (14, 4), (9, 6), (2, 6)], C["water_lt"])
     bevel(img, light=0.2, dark=-0.35)
+    for x, y in [(2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1), (10, 2), (11, 2), (2, 2)]:
+        px(img, x, y, C["steel"])  # lit edges
     # black stripe and cockpit
     rect(img, 6, 2, 8, 5, C["black"])
     rect(img, 9, 3, 12, 4, C["suit"])
@@ -22,6 +25,10 @@ def body():
     # explosive charge on the bow
     px(img, 12, 3, C["fire_yellow"])
     px(img, 12, 4, C["fire_orange"])
+    # stern mast with a blue pennant
+    px(img, 3, 3, C["deck"])
+    px(img, 2, 0, C["water"])
+    px(img, 1, 0, C["water_dk"])
     return outline(img)
 
 

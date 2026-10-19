@@ -46,7 +46,7 @@ export class HUD {
     this.root.add(this.progress);
     // boss bar (hidden until the boss arrives)
     this.bossBar = s.add.container(480, 524).setVisible(false).setDepth(DEPTH.hud);
-    this.bossBar.add(text(s, 0, -14, "THE OPPS' MOTHERSHIP", 8, COLORS.red));
+    this.bossBar.add(text(s, 0, -14, "THE AYATOLLAH'S MOTHERSHIP", 8, COLORS.red));
     this.bossBar.add(s.add.rectangle(0, 0, 404, 12, 0x000000).setStrokeStyle(1, 0xff4a4a));
     this.bossFill = s.add.rectangle(-200, 0, 400, 8, 0xff4a4a).setOrigin(0, 0.5);
     this.bossBar.add(this.bossFill);

@@ -1,6 +1,7 @@
-"""The opps' mothership: fast-attack-craft tender with speaker stacks on deck, a satellite dish
-on the deckhouse and gold trim. Drawn bow-right, then flipped so it faces LEFT."""
-from draw import bevel, blob, disc, flip_h, new, outline, px, rect, ring, rng, strip
+"""The Ayatollah's mothership: fast-attack-craft tender with speaker stacks on deck, a satellite
+dish on the deckhouse, gold trim, a gold "A" label badge and both crews' pennants (red aft of the
+mast, blue at the bow). Drawn bow-right, then flipped so it faces LEFT."""
+from draw import bevel, blob, disc, flip_h, new, outline, px, rect, ring, rng, strip, tiny_text
 from palette import C
 
 NAME = "boss"
@@ -57,14 +58,23 @@ def base():
     px(img, 25, 9, C["black"])
     px(img, 26, 9, C["hull_dk"])
     px(img, 27, 8, C["black"])
-    # flag + green/white/red stripe on the roof (generic hostile marking)
-    px(img, 20, 7, C["olive"])
-    px(img, 20, 8, C["white"])
-    px(img, 20, 9, C["fire_red"])
+    # the Bloods' red pennant streams aft of the mast
+    for x, y in [(22, 8), (21, 8), (20, 8), (19, 8), (22, 9), (21, 9), (20, 9)]:
+        px(img, x, y, C["candy"])
+    px(img, 19, 8, C["candy_dk"])
+    # gold label badge on the deckhouse
+    rect(img, 26, 10, 30, 14, C["black"])
+    tiny_text(img, 27, 10, "A", C["gold"])
     # bow deck gun
     disc(img, 36, 9.5, 2.2, C["hull"])
     rect(img, 37, 9, 43, 10, C["deck"])
     ring(img, 36, 9.5, 2, C["deck"])
+    # the Crips' blue pennant on the bow jackstaff
+    px(img, 42, 7, C["deck"])
+    for x, y in [(41, 6), (40, 6), (39, 6), (38, 6), (41, 7), (40, 7), (39, 7)]:
+        px(img, x, y, C["steel"])
+    for x, y in [(40, 7), (39, 7), (38, 6)]:
+        px(img, x, y, C["water_lt"])
     # gold-trimmed missile canisters either side of the deckhouse
     rect(img, 16, 3, 20, 4, C["hull_lt"])
     rect(img, 16, 15, 20, 16, C["hull_lt"])

@@ -54,6 +54,16 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0xffffff).fillRect(0, 0, 2, 2);
     g.generateTexture('px', 2, 2);
     g.destroy();
+    // Golden-hour haze: a 1x64 vertical gradient, stretched over the screen on later tracks.
+    const haze = this.textures.createCanvas('haze', 1, 64);
+    if (haze) {
+      const grad = haze.context.createLinearGradient(0, 0, 0, 64);
+      grad.addColorStop(0, '#ff7a3d');
+      grad.addColorStop(1, '#7a3cc8');
+      haze.context.fillStyle = grad;
+      haze.context.fillRect(0, 0, 1, 64);
+      haze.refresh();
+    }
 
     const a = this.anims;
     const strip = (key: string, start: number, end: number, frameRate: number, repeat = -1, anim = key) =>

@@ -38,7 +38,7 @@ EXPECTED = {
     "potus": (64, 64, 5),
     "ui_panel": (48, 48, 1),
     "hud_icons": (16, 16, 6),
-    "tiles": (16, 16, 16),
+    "tiles": (16, 16, 23),
     "title_logo": (232, 104, 1),
     "advisory": (48, 32, 1),
 }

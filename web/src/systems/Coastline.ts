@@ -18,6 +18,13 @@ const T = {
   village: 13,
   shallow: 14,
   foam: 15,
+  road: 16,
+  roadCarRed: 17,
+  roadCarBlue: 18,
+  palm: 19,
+  tagA: 20,
+  tagB: 21,
+  billboard: 22,
 };
 
 const MIN_WATER = 200;
@@ -131,6 +138,13 @@ export class Coastline {
     return side === 'top' ? rows * TILE - TILE / 2 - 22 : HEIGHT - rows * TILE + TILE / 2 + 22;
   }
 
+  /** Centre y of the coast road at screen x, or null where the shore is cliff or too thin for one. */
+  roadSpot(screenX: number, side: 'top' | 'bot'): number | null {
+    const col = this.columnAt(screenX);
+    if (side === 'top') return col.cliffTop || col.top < 3 ? null : (col.top - 2) * TILE + TILE / 2;
+    return col.cliffBot || col.bot < 3 ? null : HEIGHT - (col.bot - 1) * TILE - TILE / 2;
+  }
+
   update(dx: number, dtMs: number) {
     this.scrollX += dx;
     this.water.tilePositionX = this.scrollX / PX;
@@ -157,10 +171,20 @@ export class Coastline {
     for (let c = c0; c <= c1; c++) if (!this.live.has(c)) this.live.set(c, this.paint(c));
   }
 
-  private interiorTile(c: number, row: number, cliff: boolean): number {
+  /** Asphalt, with a parked lowrider now and then (about 1 in 7, alternating red and blue). */
+  private roadTile(c: number): number {
+    if (noise1d(c * 53, this.seed + 31, 1.3) <= 0.58) return T.road;
+    return c % 2 === 0 ? T.roadCarRed : T.roadCarBlue;
+  }
+
+  private interiorTile(c: number, row: number, cliff: boolean, byRoad = false): number {
     const h = noise1d(c * 31 + row * 977, this.seed + 21, 1.7);
     if (cliff) return h > 0.75 ? T.rockDark : T.rock;
-    if (h > 0.82) return T.village;
+    if (h > 0.82) {
+      const k = Math.floor((noise1d(c * 17 + row * 131, this.seed + 47, 1.1) + 1) * 2);
+      return [T.village, T.tagA, T.tagB, T.billboard][Math.min(3, k)];
+    }
+    if (h > 0.6 && byRoad) return T.palm;
     if (h > 0.45) return T.scrub;
     if (h < -0.4) return T.dune;
     return T.sand;
@@ -180,14 +204,23 @@ export class Coastline {
     const bobs: Phaser.GameObjects.Image[] = [];
     const x = c * TILE; // container-local: the container itself scrolls
     const rowsTotal = Math.ceil(HEIGHT / TILE);
+    // Sandy coasts carry a road on the second row inland, with palms along its landward side.
+    const roadTop = !col.cliffTop && col.top >= 3 ? col.top - 2 : -1;
+    const roadBot = !col.cliffBot && col.bot >= 3 ? 1 : -1;
     for (let r = 0; r < col.top; r++) {
-      const frame = r === col.top - 1 ? (col.cliffTop ? T.cliffN : T.shoreN) : this.interiorTile(c, r, col.cliffTop);
+      let frame: number;
+      if (r === col.top - 1) frame = col.cliffTop ? T.cliffN : T.shoreN;
+      else if (r === roadTop) frame = this.roadTile(c);
+      else frame = this.interiorTile(c, r, col.cliffTop, r === roadTop - 1);
       bobs.push(this.tile(x, r * TILE, frame));
     }
     for (let i = 0; i < col.bot; i++) {
       const r = rowsTotal - col.bot + i;
       const y = HEIGHT - (col.bot - i) * TILE;
-      const frame = i === 0 ? (col.cliffBot ? T.cliffS : T.shoreS) : this.interiorTile(c, r + 40, col.cliffBot);
+      let frame: number;
+      if (i === 0) frame = col.cliffBot ? T.cliffS : T.shoreS;
+      else if (i === roadBot) frame = this.roadTile(c + 7);
+      else frame = this.interiorTile(c, r + 40, col.cliffBot, i === roadBot + 1);
       bobs.push(this.tile(x, y, frame));
     }
     return bobs;
