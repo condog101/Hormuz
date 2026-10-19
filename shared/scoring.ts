@@ -25,28 +25,37 @@ export function levelClearBonus(level: number, hp: number, tookDamage: boolean):
 
 // Generous ceiling on kill points per second of play. Real play peaks well below this.
 export const MAX_KILL_POINTS_PER_SEC = 500;
-// Bosses appear on levels 5 and 10, then every 5th endless wave.
-const bossesThrough = (level: number) => Math.floor(level / 5);
+// Bosses appear on every 5th level (5, 10, then endless waves 15, 20, ...).
+const bossesBetween = (from: number, to: number) => Math.floor(to / 5) - Math.floor((from - 1) / 5);
 
-/** Highest score a legitimate run could reach by `levelReached` in `durationMs`. */
-export function maxPlausibleScore(levelReached: number, durationMs: number): number {
-  const lvl = Math.max(1, Math.floor(levelReached));
+/** Highest score a legitimate run from `startLevel` to `levelReached` could reach in `durationMs`. */
+export function maxPlausibleScore(startLevel: number, levelReached: number, durationMs: number): number {
+  const from = Math.max(1, Math.floor(startLevel));
+  const to = Math.max(from, Math.floor(levelReached));
   const secs = Math.max(0, durationMs) / 1000;
   let bonuses = 0;
-  for (let l = 1; l <= lvl; l++) bonuses += levelClearBonus(l, MAX_HP, false);
-  return Math.ceil(bonuses + bossesThrough(lvl) * KILL_POINTS.boss + secs * MAX_KILL_POINTS_PER_SEC);
+  for (let l = from; l <= to; l++) bonuses += levelClearBonus(l, MAX_HP, false);
+  return Math.ceil(bonuses + bossesBetween(from, to) * KILL_POINTS.boss + secs * MAX_KILL_POINTS_PER_SEC);
 }
 
-/** Shortest a run reaching `levelReached` could possibly take (levels are >= 60s each). */
+/** Shortest a level could possibly take (levels are >= 60s each). */
 export const MIN_LEVEL_DURATION_MS = 55_000;
 
-export function isPlausibleRun(run: { score: number; levelReached: number; durationMs: number; kills: number }): boolean {
-  const { score, levelReached, durationMs, kills } = run;
-  if (![score, levelReached, durationMs, kills].every((n) => Number.isInteger(n) && n >= 0)) return false;
-  if (levelReached < 1 || levelReached > 999) return false;
+export interface RunSubmission {
+  score: number;
+  startLevel: number; // level the run began on (1..10 campaign, 11 = endless)
+  levelReached: number; // level the run ended on (or 10 on victory)
+  durationMs: number;
+  kills: number;
+}
+
+export function isPlausibleRun(run: RunSubmission): boolean {
+  const { score, startLevel, levelReached, durationMs, kills } = run;
+  if (![score, startLevel, levelReached, durationMs, kills].every((n) => Number.isInteger(n) && n >= 0)) return false;
+  if (startLevel < 1 || startLevel > 11 || levelReached < startLevel || levelReached > 999) return false;
   if (durationMs > 6 * 60 * 60 * 1000) return false;
-  // Reaching level N means clearing N-1 levels, each of which has a minimum length.
-  if (durationMs < (levelReached - 1) * MIN_LEVEL_DURATION_MS) return false;
+  // Reaching level N from S means clearing N-S levels, each of which has a minimum length.
+  if (durationMs < (levelReached - startLevel) * MIN_LEVEL_DURATION_MS) return false;
   if (kills > (durationMs / 1000) * 10 + 10) return false;
-  return score <= maxPlausibleScore(levelReached, durationMs);
+  return score <= maxPlausibleScore(startLevel, levelReached, durationMs);
 }

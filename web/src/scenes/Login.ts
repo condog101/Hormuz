@@ -1,0 +1,82 @@
+import Phaser from 'phaser';
+import { sanitizeProgress } from '../../../shared/progress';
+import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { api, ApiError } from '../net/api';
+import { syncProgress } from '../net/sync';
+import { Save } from '../systems/Save';
+import { COLORS, panel, text } from '../systems/UI';
+
+/**
+ * Callsign + PIN form. Phaser has no text input, so this drives an HTML form
+ * (#login in index.html) laid over the canvas.
+ */
+export class LoginScene extends Phaser.Scene {
+  constructor() {
+    super('Login');
+  }
+
+  create() {
+    this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
+    panel(this, 220, 60, 520, 420);
+    text(this, WIDTH / 2, 100, 'FLEET REGISTRY', 24, COLORS.gold);
+
+    const form = document.getElementById('login') as HTMLFormElement;
+    const callsign = form.querySelector<HTMLInputElement>('[name=callsign]')!;
+    const pin = form.querySelector<HTMLInputElement>('[name=pin]')!;
+    const msg = form.querySelector<HTMLElement>('.msg')!;
+    const cancel = form.querySelector<HTMLButtonElement>('[data-action=cancel]')!;
+    form.hidden = false;
+    msg.textContent = 'New here? Pick a callsign and 4-digit PIN, then REGISTER. Back again? SIGN IN with the same PIN.';
+    msg.className = 'msg';
+    callsign.value = '';
+    pin.value = '';
+    // Keep Phaser from eating keystrokes meant for the inputs.
+    this.input.keyboard!.enabled = false;
+    this.input.keyboard!.disableGlobalCapture();
+    setTimeout(() => callsign.focus(), 50);
+
+    let busy = false;
+    const close = (toTitle = true) => {
+      form.hidden = true;
+      form.onsubmit = null;
+      cancel.onclick = null;
+      this.input.keyboard!.enabled = true;
+      this.input.keyboard!.enableGlobalCapture();
+      if (toTitle) this.scene.start('Title');
+    };
+
+    const submit = async (mode: 'login' | 'register') => {
+      if (busy) return;
+      busy = true;
+      msg.className = 'msg';
+      msg.textContent = mode === 'login' ? 'Authenticating...' : 'Registering...';
+      try {
+        const res = await (mode === 'login' ? api.login : api.register)(callsign.value.trim(), pin.value);
+        Save.setSession({ token: res.token, callsign: res.profile.callsign });
+        Save.merge(sanitizeProgress(res.profile.progress));
+        await syncProgress();
+        close();
+      } catch (e) {
+        msg.className = 'msg error';
+        msg.textContent = e instanceof ApiError ? e.message : 'Something went wrong.';
+      } finally {
+        busy = false;
+      }
+    };
+
+    form.onsubmit = (ev) => {
+      ev.preventDefault();
+      const which = (ev.submitter as HTMLButtonElement | null)?.dataset.action === 'register' ? 'register' : 'login';
+      void submit(which);
+    };
+    cancel.onclick = () => close();
+    const onEsc = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape' && !form.hidden) close();
+    };
+    window.addEventListener('keydown', onEsc);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('keydown', onEsc);
+      if (!form.hidden) close(false);
+    });
+  }
+}

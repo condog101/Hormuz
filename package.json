@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n web,api -c cyan,magenta \"vite\" \"wrangler dev --port 8787\"",
+    "dev": "mkdir -p web/dist && concurrently -k -n web,api -c cyan,magenta \"vite\" \"wrangler dev --port 8787\"",
     "dev:web": "vite",
-    "dev:api": "wrangler dev --port 8787",
+    "dev:api": "mkdir -p web/dist && wrangler dev --port 8787",
     "build": "tsc --noEmit -p web && tsc --noEmit -p worker && vite build",
     "preview": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy",
