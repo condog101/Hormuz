@@ -2,46 +2,47 @@ import Phaser from 'phaser';
 import { DEPTH, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import { COLORS, panel, text } from './UI';
 
-/** Stick travel in canvas px for full deflection. */
-const RADIUS = 64;
-const DEAD_ZONE = 0.15;
-/** Aim stick deflection needed to turn the turret and fire. */
-const AIM_MIN = 0.2;
+/** Arrow pad, bottom-left: centre and the distance from it to each arrow's centre. */
+const PAD_X = 122;
+const PAD_Y = 418;
+const PAD_STEP = 76;
+const ARROW = 72;
+/** A touch this close to the pad centre belongs to the pad. */
+const PAD_REACH = 130;
+/** Touches nearer the centre than this hold the ship still. */
+const PAD_DEAD = 14;
 const BTN = 80;
 const BTN_X = 908;
 /** Extra px around each button that still counts as a hit. */
 const SLOP = 8;
 const DEPTH_TOUCH = DEPTH.hud + 20;
+const GOLD = 0xffd84a;
+const CREAM = 0xf3ead7;
 
 type Vec = { x: number; y: number };
-
-interface Stick {
-  id: number;
-  base: Vec;
-  vec: Vec;
-  deflection: number;
-}
 
 interface Button {
   root: Phaser.GameObjects.Container;
   rect: Phaser.Geom.Rectangle;
 }
 
-/** Floating twin sticks and on-canvas buttons for the Game scene on touch devices. */
+/** Arrow pad, touch-to-aim and on-canvas buttons for the Game scene on touch devices. */
 export class TouchControls {
-  aimAngle = 0;
   flank = false;
 
-  private move: Stick | null = null;
-  private aim: Stick | null = null;
-  private aimDeflection = 1;
+  /** Pointer holding the arrow pad, and the 8-way direction it points. */
+  private padId: number | null = null;
+  private dir: Vec = { x: 0, y: 0 };
+  /** Pointer aiming the gun, and the last point it touched (the gun keeps that aim after release). */
+  private aimId: number | null = null;
+  private target: Vec | null = null;
   private enabled = true;
   private ciwsTapped = false;
   private gunTapped = false;
   private pauseTapped = false;
 
-  private moveGfx: Phaser.GameObjects.Arc[];
-  private aimGfx: Phaser.GameObjects.Arc[];
+  /** Arrow triangles in right, down, left, up order. */
+  private arrows: Phaser.GameObjects.Triangle[] = [];
   private ciwsBtn: Button;
   private ciwsIcon: Phaser.GameObjects.Image;
   private gunBtn: Button;
@@ -50,12 +51,19 @@ export class TouchControls {
   private flankText: Phaser.GameObjects.Text;
   private flankRing: Phaser.GameObjects.Rectangle;
   private pauseRect: Phaser.Geom.Rectangle;
-  private dot: Phaser.GameObjects.Arc;
+  private reticle: Phaser.GameObjects.Arc;
 
   constructor(private scene: Phaser.Scene) {
     const s = scene;
-    this.moveGfx = this.stickGfx();
-    this.aimGfx = this.stickGfx();
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2;
+      const tri = s.add.triangle(0, 0, 0, 0, 0, 28, 24, 14, CREAM).setAngle(i * 90);
+      s.add
+        .container(PAD_X + Math.cos(a) * PAD_STEP, PAD_Y + Math.sin(a) * PAD_STEP, [panel(s, -ARROW / 2, -ARROW / 2, ARROW, ARROW), tri])
+        .setDepth(DEPTH_TOUCH)
+        .setAlpha(0.8);
+      this.arrows.push(tri);
+    }
 
     this.ciwsBtn = this.button(228, 'CIWS');
     this.ciwsIcon = s.add.image(0, -8, 'hud_icons', 3).setScale(3);
@@ -65,7 +73,7 @@ export class TouchControls {
     this.gunBtn.root.add(this.gunIcon);
     this.flankBtn = this.button(412, 'FLANK');
     this.flankText = text(s, 0, -8, '>>', 16, COLORS.text);
-    this.flankRing = s.add.rectangle(0, 0, BTN - 4, BTN - 4).setStrokeStyle(3, 0xffd84a).setVisible(false);
+    this.flankRing = s.add.rectangle(0, 0, BTN - 4, BTN - 4).setStrokeStyle(3, GOLD).setVisible(false);
     this.flankBtn.root.add([this.flankText, this.flankRing]);
 
     this.pauseRect = new Phaser.Geom.Rectangle(WIDTH / 2 - 32 - SLOP, 8 - SLOP, 64 + SLOP * 2, 40 + SLOP * 2);
@@ -74,20 +82,14 @@ export class TouchControls {
       .setDepth(DEPTH_TOUCH)
       .setAlpha(0.85);
 
-    this.dot = s.add.circle(0, 0, 5, 0xffd84a).setStrokeStyle(2, 0x000000).setDepth(DEPTH_TOUCH).setVisible(false);
+    // Ring around the aiming finger, wide enough to show past the thumb.
+    this.reticle = s.add.circle(0, 0, 30).setStrokeStyle(2, GOLD, 0.8).setDepth(DEPTH_TOUCH).setVisible(false);
 
     s.input.on('pointerdown', this.onDown, this);
     s.input.on('pointermove', this.onMove, this);
     s.input.on('pointerup', this.onUp, this);
     s.input.on('pointerupoutside', this.onUp, this);
     s.game.events.on(Phaser.Core.Events.BLUR, this.releaseAll, this);
-  }
-
-  private stickGfx(): Phaser.GameObjects.Arc[] {
-    const s = this.scene;
-    const base = s.add.circle(0, 0, RADIUS, 0xffffff, 0.08).setStrokeStyle(2, 0xffd84a, 0.5);
-    const knob = s.add.circle(0, 0, 22, 0xffd84a, 0.45).setStrokeStyle(2, 0x000000, 0.6);
-    return [base, knob].map((c) => c.setDepth(DEPTH_TOUCH).setVisible(false));
   }
 
   private button(y: number, label: string): Button {
@@ -105,7 +107,7 @@ export class TouchControls {
   }
 
   private onDown(p: Phaser.Input.Pointer, over: Phaser.GameObjects.GameObject[]) {
-    // A tap on an interactive object (the pause menu) is not a stick or button press.
+    // A tap on an interactive object (the pause menu) is not a game control.
     if (over.length > 0) return;
     const { x, y } = p;
     const hit = (r: Phaser.Geom.Rectangle) => Phaser.Geom.Rectangle.Contains(r, x, y);
@@ -123,82 +125,84 @@ export class TouchControls {
     } else if (hit(this.flankBtn.rect)) {
       this.flank = !this.flank;
       this.press(this.flankBtn);
-    } else if (x < WIDTH / 2) {
-      if (y > 96 && !this.move) this.move = this.grab(p, this.moveGfx);
-    } else if (!this.aim) {
-      this.aim = this.grab(p, this.aimGfx);
+    } else if (Math.hypot(x - PAD_X, y - PAD_Y) < PAD_REACH) {
+      if (this.padId === null) {
+        this.padId = p.id;
+        this.steer(p);
+      }
+    } else if (this.aimId === null) {
+      this.aimId = p.id;
+      this.aimAt(p);
     }
-  }
-
-  private grab(p: Phaser.Input.Pointer, gfx: Phaser.GameObjects.Arc[]): Stick {
-    gfx.forEach((g) => g.setPosition(p.x, p.y).setVisible(true));
-    return { id: p.id, base: { x: p.x, y: p.y }, vec: { x: 0, y: 0 }, deflection: 0 };
   }
 
   private onMove(p: Phaser.Input.Pointer) {
-    if (this.move?.id === p.id) this.drag(this.move, p, this.moveGfx);
-    if (this.aim?.id === p.id) {
-      this.drag(this.aim, p, this.aimGfx);
-      if (this.aim.deflection > AIM_MIN) {
-        this.aimAngle = Math.atan2(this.aim.vec.y, this.aim.vec.x);
-        this.aimDeflection = this.aim.deflection;
-      }
-    }
+    if (p.id === this.padId) this.steer(p);
+    if (p.id === this.aimId) this.aimAt(p);
   }
 
-  private drag(st: Stick, p: Phaser.Input.Pointer, [base, knob]: Phaser.GameObjects.Arc[]) {
-    let dx = p.x - st.base.x;
-    let dy = p.y - st.base.y;
-    const d = Math.hypot(dx, dy);
-    // Past 1.5 radii the base trails the finger, so the thumb never has to come back to the start.
-    if (d > RADIUS * 1.5) {
-      const k = (d - RADIUS * 1.5) / d;
-      st.base.x += dx * k;
-      st.base.y += dy * k;
-      dx = p.x - st.base.x;
-      dy = p.y - st.base.y;
+  /** 8-way direction from the pad centre: a thumb between two arrows goes diagonally. */
+  private steer(p: Phaser.Input.Pointer) {
+    const dx = p.x - PAD_X;
+    const dy = p.y - PAD_Y;
+    if (Math.hypot(dx, dy) < PAD_DEAD) this.dir = { x: 0, y: 0 };
+    else {
+      const a = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) * (Math.PI / 4);
+      this.dir = { x: Math.round(Math.cos(a)), y: Math.round(Math.sin(a)) };
     }
-    const len = Math.min(1, Math.hypot(dx, dy) / RADIUS);
-    const ang = Math.atan2(dy, dx);
-    st.deflection = len;
-    st.vec = len < DEAD_ZONE ? { x: 0, y: 0 } : { x: Math.cos(ang) * len, y: Math.sin(ang) * len };
-    base.setPosition(st.base.x, st.base.y);
-    knob.setPosition(st.base.x + Math.cos(ang) * len * RADIUS, st.base.y + Math.sin(ang) * len * RADIUS);
+    this.lightArrows();
+  }
+
+  private lightArrows() {
+    const { x, y } = this.dir;
+    const lit = [x > 0, y > 0, x < 0, y < 0];
+    this.arrows.forEach((t, i) => t.setFillStyle(lit[i] ? GOLD : CREAM));
+  }
+
+  private aimAt(p: Phaser.Input.Pointer) {
+    this.target = { x: p.worldX, y: p.worldY };
+    this.reticle.setPosition(p.worldX, p.worldY).setVisible(true);
   }
 
   private onUp(p: Phaser.Input.Pointer) {
-    if (this.move?.id === p.id) this.releaseMove();
-    if (this.aim?.id === p.id) this.releaseAim();
+    if (p.id === this.padId) this.releasePad();
+    if (p.id === this.aimId) this.releaseAim();
   }
 
-  private releaseMove() {
-    this.move = null;
-    this.moveGfx.forEach((g) => g.setVisible(false));
+  private releasePad() {
+    this.padId = null;
+    this.dir = { x: 0, y: 0 };
+    this.lightArrows();
   }
 
   private releaseAim() {
-    this.aim = null;
-    this.aimGfx.forEach((g) => g.setVisible(false));
+    this.aimId = null;
+    this.reticle.setVisible(false);
   }
 
   private releaseAll() {
-    this.releaseMove();
+    this.releasePad();
     this.releaseAim();
   }
 
-  /** Analog move vector, length <= 1. */
+  /** Direction from the arrow pad; Controls normalises diagonals. */
   moveVector(): Vec {
-    return this.move ? this.move.vec : { x: 0, y: 0 };
+    return this.dir;
   }
 
+  /** The gun fires while a finger is down on the water. */
   get firing(): boolean {
-    return !!this.aim && this.aim.deflection > AIM_MIN;
+    return this.aimId !== null;
   }
 
-  /** Aim point along the stick: full deflection reaches THE 808's 380 px range. */
-  aimPoint(tx: number, ty: number): Vec {
-    const r = 80 + this.aimDeflection * 300;
-    return { x: tx + Math.cos(this.aimAngle) * r, y: ty + Math.sin(this.aimAngle) * r };
+  /** Angle from the turret to the last touched point, or null before the first touch. */
+  aimAngle(tx: number, ty: number): number | null {
+    return this.target ? Math.atan2(this.target.y - ty, this.target.x - tx) : null;
+  }
+
+  /** THE 808 lobs to the touched point. */
+  aimPoint(): Vec | null {
+    return this.target;
   }
 
   takeCiws(): boolean {
@@ -233,20 +237,15 @@ export class TouchControls {
     this.gunIcon.setFrame(WEAPONS[key].icon);
   }
 
-  update(state: { ciwsReady: number; weapon: WeaponKey; turret: Vec }) {
+  update(state: { ciwsReady: number }) {
     // Drop pointers whose end event never reached us (touchcancel, overlay, tab switch).
-    const pointers = this.scene.input.manager.pointers;
-    const down = (st: Stick) => pointers.some((p) => p.id === st.id && p.isDown);
-    if (this.move && !down(this.move)) this.releaseMove();
-    if (this.aim && !down(this.aim)) this.releaseAim();
+    const down = (id: number) => this.scene.input.manager.pointers.some((p) => p.id === id && p.isDown);
+    if (this.padId !== null && !down(this.padId)) this.releasePad();
+    if (this.aimId !== null && !down(this.aimId)) this.releaseAim();
 
     this.ciwsIcon.setAlpha(state.ciwsReady >= 1 ? 1 : 0.4);
     this.flankRing.setVisible(this.flank);
     this.flankText.setColor(this.flank ? COLORS.gold : COLORS.text);
-    if (state.weapon === 'boom') {
-      const a = this.aimPoint(state.turret.x, state.turret.y);
-      this.dot.setPosition(a.x, a.y).setVisible(true);
-    } else this.dot.setVisible(false);
   }
 
   destroy() {

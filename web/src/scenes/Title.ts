@@ -87,7 +87,7 @@ export class TitleScene extends Phaser.Scene {
           450,
           byInput(
             'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON',
-            'LEFT THUMB MOVE  RIGHT THUMB AIM + FIRE\nTAP CIWS / GUN / FLANK ON THE RIGHT  II PAUSE',
+            'ARROWS MOVE  TOUCH THE WATER TO AIM + FIRE\nTAP CIWS / GUN / FLANK ON THE RIGHT  II PAUSE',
           ),
           8,
           COLORS.dim,

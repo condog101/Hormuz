@@ -553,7 +553,7 @@ export class GameScene extends Phaser.Scene {
       reload: p.reloadFraction(this.time.now),
       boss: this.boss && !this.boss.dead ? { hp: this.boss.hp, max: this.boss.maxHp } : undefined,
     });
-    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt), weapon: this.run.weapon, turret: p.turretPos });
+    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt) });
     this.popups.update(dtMs);
   }
 

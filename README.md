@@ -29,9 +29,10 @@ Controls: WASD/arrows move, mouse aims, click/Space fires, Shift = flank speed,
 E (or right click) = CIWS burst, Esc = pause, 1/2/3 or Tab/mouse wheel = switch weapon.
 A gamepad works too (left stick move, right stick aim, RT fire, B/RB CIWS, LB flank,
 Y switch weapon).
-On phones and tablets (coarse pointer) the game shows touch controls instead: a floating stick
-under the left thumb moves, a floating stick under the right thumb aims and fires while
-deflected, CIWS / GUN / FLANK buttons sit on the right edge and `II` at the top pauses. Add
+On phones and tablets (coarse pointer) the game shows touch controls instead: an 8-way arrow
+pad in the bottom-left moves, touching anywhere else aims the gun at that spot and fires while
+held (THE 808 lobs to it), CIWS / GUN / FLANK buttons sit on the right edge and `II` at the top
+pauses. Add
 `?touch=1` to the URL to force the touch UI on desktop, or `?touch=0` to turn it off.
 
 Three main guns, all available from the start; the one in hand carries over between tracks:

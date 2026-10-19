@@ -69,7 +69,7 @@ export class Controls {
         this.aimAngle = Math.atan2(ry, rx);
       }
     }
-    if (this.touch && !this.usingPad) this.aimAngle = this.touch.aimAngle;
+    if (this.touch && !this.usingPad) this.aimAngle = this.touch.aimAngle(tx, ty) ?? this.aimAngle;
     else if (!this.usingPad) {
       const p = this.scene.input.activePointer;
       this.aimAngle = Math.atan2(p.worldY - ty, p.worldX - tx);
@@ -77,10 +77,11 @@ export class Controls {
     return this.aimAngle;
   }
 
-  /** Where the player is aiming in the world: the pointer, or 300 px along the stick on a gamepad. */
+  /** Where the player is aiming in the world: the pointer or touched point, or 300 px along the stick on a gamepad. */
   aimPoint(tx: number, ty: number): { x: number; y: number } {
-    if (this.touch && !this.usingPad) return this.touch.aimPoint(tx, ty);
-    if (this.usingPad) return { x: tx + Math.cos(this.aimAngle) * 300, y: ty + Math.sin(this.aimAngle) * 300 };
+    const touched = this.usingPad ? null : this.touch?.aimPoint();
+    if (touched) return touched;
+    if (this.usingPad || this.touch) return { x: tx + Math.cos(this.aimAngle) * 300, y: ty + Math.sin(this.aimAngle) * 300 };
     const p = this.scene.input.activePointer;
     return { x: p.worldX, y: p.worldY };
   }
@@ -106,7 +107,7 @@ export class Controls {
 
   firing(): boolean {
     const pad = this.pad;
-    // On touch any finger is the "left button", so only the aim stick fires.
+    // On touch any finger is the "left button", so only an aiming finger fires (not the arrow pad or buttons).
     const pointer = this.touch ? this.touch.firing : this.scene.input.activePointer.leftButtonDown();
     return this.keys.fire.isDown || pointer || !!(pad && (pad.R2 > 0.3 || pad.A));
   }
@@ -147,7 +148,7 @@ export class Controls {
   }
 
   /** Touch-only hooks; no-ops with keyboard, mouse and gamepad. */
-  update(state: { ciwsReady: number; weapon: WeaponKey; turret: { x: number; y: number } }) {
+  update(state: { ciwsReady: number }) {
     this.touch?.update(state);
   }
 
