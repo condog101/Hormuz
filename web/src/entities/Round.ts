@@ -7,9 +7,10 @@ export class Round extends Entity {
   private vx: number;
   private vy: number;
 
-  constructor(game: GameScene, x: number, y: number, angle: number) {
+  constructor(game: GameScene, x: number, y: number, angle: number, tint?: number) {
     super(game, x, y, 'round');
     this.setRotation(angle).setDepth(DEPTH.air - 1);
+    if (tint !== undefined) this.setTint(tint);
     this.vx = Math.cos(angle) * PLAYER.roundSpeed;
     this.vy = Math.sin(angle) * PLAYER.roundSpeed;
     this.scrolls = false;

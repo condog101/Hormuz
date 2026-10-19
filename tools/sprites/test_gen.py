@@ -42,8 +42,10 @@ EXPECTED = {
     "title_logo": (232, 104, 1),
     "advisory": (48, 32, 1),
     "lowrider": (24, 12, 10),
+    "guests": (64, 64, 4),
+    "mic": (12, 12, 2),
 }
-OPAQUE = {"tiles", "potus", "title_logo", "advisory"}
+OPAQUE = {"tiles", "potus", "title_logo", "advisory", "guests"}
 
 
 def main():

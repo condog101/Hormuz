@@ -38,6 +38,7 @@ export class LevelClearScene extends Phaser.Scene {
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.5);
     panel(this, 200, 100, 560, 320);
     text(this, WIDTH / 2, 140, lvl > LEVEL_COUNT ? 'HIDDEN TRACK DONE' : 'TRACK COMPLETE', 24, COLORS.gold);
+    if (r.feat) text(this, WIDTH / 2, 172, `FEAT. ${r.feat}`, 8, COLORS.gold);
     const lines = [
       `TRACK SCORE      ${String(r.levelScore - r.bonus).padStart(7)}`,
       `CLEAR BONUS      ${String(1000 * lvl).padStart(7)}`,

@@ -1,6 +1,7 @@
 // Big Don's line bank. Big Don is a parody of Donald Trump; every line here is
 // fictional satire written for this game. None are real quotes and no real
-// lyrics are quoted. Swear words are written as {word} and ALWAYS rendered
+// lyrics are quoted. The same goes for the guest features (GUESTS below): the
+// Ice Cube and 2Pac lines are invented for the game, caricatures not quotes. Swear words are written as {word} and ALWAYS rendered
 // bleeped (see renderLine); the censorship is part of the joke.
 
 export type QuoteTag =
@@ -16,7 +17,8 @@ export type QuoteTag =
   | 'streak'
   | 'pickup'
   | 'ciws'
-  | 'driveBy';
+  | 'driveBy'
+  | 'guest';
 
 export interface Quote {
   text: string;
@@ -25,6 +27,38 @@ export interface Quote {
 
 /** Tags where Big Don rests on the shades-and-grin portrait frame. */
 export const HYPE_TAGS: ReadonlySet<QuoteTag> = new Set<QuoteTag>(['boss', 'clear', 'victory', 'streak']);
+
+export type GuestKey = 'cube' | 'pac';
+
+/** Guest features: who they are, their portrait frame in guests.png, the buff they bring, their lines. */
+export const GUESTS: Record<GuestKey, { name: string; frame: number; buff: string; lines: string[] }> = {
+  cube: {
+    name: 'ICE CUBE',
+    frame: 0,
+    buff: 'ICE COLD',
+    lines: [
+      'I did not sign off on this feature. My manager did. Anyway. Shoot straight, captain.',
+      'Don said this would take one take. This is take forty. You have eight seconds. Make them count.',
+      'I am not here for Don. I am here for the boat. Keep the gun level and quit wasting rounds.',
+      'Cold hands, steady aim. Nobody is touching you for a minute. Use it.',
+      'Who made this beat, a destroyer? Fine. Let us work. Aim first, then pull.',
+      'Don wants a writing credit on my verse. He gets nothing. You get covering fire. Go.',
+    ],
+  },
+  pac: {
+    name: '2PAC',
+    frame: 2,
+    buff: 'DOUBLE UP',
+    lines: [
+      'Captain, the whole coast is watching you sail. Stand tall and let them watch.',
+      'Don thinks this is his album. It is yours. The water knows it too. Let them hear it.',
+      'Every wave out there is a verse you wrote. I am just here to double it.',
+      'Rough water, rough crowd. You were made for both. I got you, captain.',
+      'Tell Don his chains are heavier than his bars. Then tell those boats goodbye.',
+      'Sunset on the strait and fire on the shore. Beautiful and dangerous. Like your aim tonight.',
+    ],
+  },
+};
 
 /** Hype-man ad-libs popped over kills and CIWS bursts. */
 export const ADLIBS = ['YEAH!', 'WHAT!', 'UH!', 'OKAAAY!', 'SKRRT!', 'BRRRAP!'];
@@ -148,6 +182,14 @@ export const QUOTES: Quote[] = [
     'That little gun just spun up. Beautiful spin. The best spin. More of that.',
     'Did the boat just rap? That was a flow. Mechanical flow. Nobody has it.',
     'Close-in weapon. Very close. Too close for comfort. Comfort is for the {damn} opps.',
+  ]),
+  ...q('guest', [
+    'Who invited them? I invited them. I think. Tremendous verse. Mine was better. Not as good, but better.',
+    'They were on MY album. My album. Put my name first on that feature. Bigger font.',
+    'Nice verse. Very nice. I wrote half of it. The good half. They will tell you otherwise. Fake.',
+    'Everybody wants to be on the album now. I am charging for the next feature. Big money.',
+    'They did not even say my name. Not once. Remix it. Put my name in it twelve times.',
+    'Guest features are great. The best. As long as they leave. Okay, they left. Good.',
   ]),
   ...q('driveBy', [
     'That is a drive-by, captain. A real one. Ours was a metaphor.',

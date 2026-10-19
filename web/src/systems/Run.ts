@@ -1,5 +1,6 @@
 import { PLAYER } from '../data/balance';
 import { ENDLESS_START } from '../data/levels';
+import type { GuestKey } from '../data/quotes';
 
 /** State carried across scenes for one play session (campaign or endless). */
 export interface RunState {
@@ -10,6 +11,8 @@ export interface RunState {
   lives: number;
   kills: number;
   playMs: number;
+  /** The last guest feature, so the next one is the other guest. */
+  lastGuest?: GuestKey;
 }
 
 export function newRun(mode: RunState['mode'], startLevel: number): RunState {

@@ -13,6 +13,9 @@ export class HUD {
   private ciwsIcon: Phaser.GameObjects.Image;
   private bossBar: Phaser.GameObjects.Container;
   private bossFill: Phaser.GameObjects.Rectangle;
+  private buffBar: Phaser.GameObjects.Container;
+  private buffLabel: Phaser.GameObjects.Text;
+  private buffFill: Phaser.GameObjects.Rectangle;
   private shownScore = 0;
 
   constructor(scene: Phaser.Scene, level: LevelDef) {
@@ -44,6 +47,14 @@ export class HUD {
     this.root.add(s.add.rectangle(130, 62, 166, 4, 0x1d2b46).setOrigin(0, 0.5));
     this.progress = s.add.rectangle(130, 62, 0, 4, 0xffd84a).setOrigin(0, 0.5);
     this.root.add(this.progress);
+    // guest-feature buff (hidden unless one is running)
+    this.buffBar = s.add.container(8, 86).setVisible(false).setDepth(DEPTH.hud);
+    this.buffBar.add(panel(s, 0, 0, 300, 24));
+    this.buffLabel = text(s, 12, 12, '', 8, COLORS.gold, 0).setOrigin(0, 0.5);
+    this.buffBar.add(this.buffLabel);
+    this.buffBar.add(s.add.rectangle(130, 12, 160, 8, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, 0xb88c1e));
+    this.buffFill = s.add.rectangle(131, 12, 158, 6, 0xffd84a).setOrigin(0, 0.5);
+    this.buffBar.add(this.buffFill);
     // boss bar (hidden until the boss arrives)
     this.bossBar = s.add.container(480, 524).setVisible(false).setDepth(DEPTH.hud);
     this.bossBar.add(text(s, 0, -14, "THE AYATOLLAH'S MOTHERSHIP", 8, COLORS.red));
@@ -67,6 +78,17 @@ export class HUD {
       this.bossBar.setVisible(true);
       this.bossFill.width = 400 * Phaser.Math.Clamp(state.boss.hp / state.boss.max, 0, 1);
     } else this.bossBar.setVisible(false);
+  }
+
+  /** Show the running guest buff, or hide the bar when `fraction` <= 0. */
+  setBuff(label: string, fraction: number) {
+    if (fraction <= 0) {
+      this.buffBar.setVisible(false);
+      return;
+    }
+    this.buffBar.setVisible(true);
+    this.buffLabel.setText(label);
+    this.buffFill.width = 158 * Phaser.Math.Clamp(fraction, 0, 1);
   }
 
   static ciwsFraction(now: number, readyAt: number) {

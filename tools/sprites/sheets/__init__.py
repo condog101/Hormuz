@@ -9,8 +9,10 @@ from . import (
     destroyer,
     drone,
     explosions,
+    guests,
     hud_icons,
     lowrider,
+    mic,
     mine,
     missile,
     pickup,
@@ -51,4 +53,6 @@ SHEETS = [
     title_logo,
     advisory,
     lowrider,
+    guests,
+    mic,
 ]

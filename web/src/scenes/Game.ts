@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
 import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WIDTH } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
-import { ADLIBS } from '../data/quotes';
+import { ADLIBS, GUESTS, type GuestKey } from '../data/quotes';
 import { Boss } from '../entities/Boss';
 import type { Entity } from '../entities/Entity';
+import { MicPickup } from '../entities/MicPickup';
 import { Missile } from '../entities/Missile';
 import type { Pickup } from '../entities/Pickup';
 import { Player } from '../entities/Player';
@@ -28,6 +29,8 @@ export interface LevelResult {
   bonus: number;
   tookDamage: boolean;
   hp: number;
+  /** Guest who featured on this track, if any. */
+  feat?: string;
 }
 
 type Phase = 'transit' | 'boss' | 'clear' | 'over';
@@ -48,7 +51,7 @@ export class GameScene extends Phaser.Scene {
   private enemies: Entity[] = [];
   private hostiles: Entity[] = [];
   private rounds: Round[] = [];
-  private pickups: Pickup[] = [];
+  private pickups: (Pickup | MicPickup)[] = [];
   private shells: Shell[] = [];
   private boss: Boss | null = null;
   private distance = 0;
@@ -65,6 +68,11 @@ export class GameScene extends Phaser.Scene {
   private lowHullSaid = false;
   /** Big Don comments on the first drive-by of each track. */
   private driveBySeen = false;
+  /** Running guest-feature buff. */
+  private buff: GuestKey | null = null;
+  private buffStart = 0;
+  private buffUntil = 0;
+  private feat: string | undefined;
 
   constructor() {
     super('Game');
@@ -88,6 +96,9 @@ export class GameScene extends Phaser.Scene {
     this.killTimes = [];
     this.lowHullSaid = false;
     this.driveBySeen = false;
+    this.buff = null;
+    this.buffUntil = 0;
+    this.feat = undefined;
     this.levelStartScore = this.run.score;
   }
 
@@ -134,7 +145,7 @@ export class GameScene extends Phaser.Scene {
     this.popups.trigger('driveBy', true);
   }
 
-  addPickup(p: Pickup) {
+  addPickup(p: Pickup | MicPickup) {
     this.pickups.push(p);
   }
 
@@ -185,6 +196,7 @@ export class GameScene extends Phaser.Scene {
 
   private loseLife() {
     const p = this.player;
+    this.endBuff();
     this.run.lives--;
     Audio.play('death');
     this.fx.explosion(p.x, p.y, true);
@@ -208,22 +220,70 @@ export class GameScene extends Phaser.Scene {
     this.fx.floatText(x, y - 10, `+${points}`);
   }
 
+  /** Golden mic collected: the other guest from last time drops a verse and a buff. */
+  private startGuest() {
+    const p = this.player;
+    const now = this.time.now;
+    const pool = (Object.keys(GUESTS) as GuestKey[]).filter((k) => k !== this.run.lastGuest);
+    const k = Phaser.Utils.Array.GetRandom(pool);
+    const guest = GUESTS[k];
+    this.run.lastGuest = k;
+    this.feat = guest.name;
+    this.endBuff();
+    Audio.play('clear');
+    this.popups.say({ name: guest.name, key: 'guests', rest: guest.frame, talk: guest.frame + 1 }, Phaser.Utils.Array.GetRandom(guest.lines), () =>
+      this.time.delayedCall(6000, () => this.popups.trigger('guest', true)),
+    );
+    this.fx.adlib(p.x, p.y - 40, `FEAT. ${guest.name}`);
+    this.buff = k;
+    this.buffStart = now;
+    if (k === 'cube') {
+      // ICE COLD: untouchable, double fire rate, ice-blue ship and rounds
+      this.buffUntil = now + 8000;
+      p.invulnUntil = Math.max(p.invulnUntil, this.buffUntil);
+      p.fireMult = 0.5;
+      p.buffTint = 0x9fe3ff;
+    } else {
+      // DOUBLE UP: +40 hull, double kill points, an ad-lib on every kill
+      this.buffUntil = now + 10000;
+      p.hp = Math.min(PLAYER.hp, p.hp + 40);
+      p.updateFrame();
+      this.fx.floatText(p.x, p.y - 20, '+40 HULL', COLORS.green);
+    }
+  }
+
+  private endBuff() {
+    if (!this.buff) return;
+    const p = this.player;
+    if (this.buff === 'cube') {
+      p.invulnUntil = Math.min(p.invulnUntil, this.time.now);
+      p.fireMult = 1;
+      p.buffTint = null;
+      p.clearTint();
+      p.turret.clearTint();
+    }
+    this.buff = null;
+    this.buffUntil = 0;
+    this.hud.setBuff('', 0);
+  }
+
   private killed(e: Entity) {
     if (!e.kind) return;
     this.run.kills++;
-    this.addScore(KILL_POINTS[e.kind], e.x, e.y);
+    const doubled = this.buff === 'pac';
+    this.addScore(KILL_POINTS[e.kind] * (doubled ? 2 : 1), e.x, e.y);
     Audio.play(e.kind === 'boss' ? 'bigBoom' : 'boom', { minGapMs: 40 });
     // hype man: an ad-lib on every third kill and on every streak
     const now = this.time.now;
     this.killTimes = this.killTimes.filter((t) => now - t < 3000);
     this.killTimes.push(now);
-    let adlib = this.run.kills % 3 === 0;
+    let adlib = doubled || this.run.kills % 3 === 0;
     if (this.killTimes.length >= 5) {
       this.killTimes = [];
       this.popups.trigger('streak');
       adlib = true;
     }
-    if (adlib) this.fx.adlib(e.x, e.y - 22, Phaser.Utils.Array.GetRandom(ADLIBS));
+    if (adlib) this.fx.adlib(e.x, e.y - 22, Phaser.Utils.Array.GetRandom(doubled ? [...ADLIBS, 'WEST SIDE!'] : ADLIBS));
     if (e.kind === 'boss') {
       this.popups.trigger('boss', true);
       this.time.delayedCall(2200, () => this.levelClear());
@@ -232,7 +292,7 @@ export class GameScene extends Phaser.Scene {
 
   private fire() {
     const m = this.player.muzzle;
-    this.rounds.push(new Round(this, m.x, m.y, this.player.turret.rotation));
+    this.rounds.push(new Round(this, m.x, m.y, this.player.turret.rotation, this.player.buffTint ?? undefined));
     Audio.play('shoot', { volume: 0.7 });
     this.fx.smoke(m.x, m.y);
   }
@@ -274,6 +334,7 @@ export class GameScene extends Phaser.Scene {
     this.phase = 'clear';
     this.spawner.active = false;
     const hp = this.player.hp;
+    this.endBuff();
     const bonus = levelClearBonus(this.level.n, hp, this.tookDamage);
     this.run.score += bonus;
     Audio.play('clear');
@@ -283,6 +344,7 @@ export class GameScene extends Phaser.Scene {
       bonus,
       tookDamage: this.tookDamage,
       hp,
+      feat: this.feat,
     };
     // Sail off to the east.
     this.tweens.add({ targets: this.player, x: WIDTH + 120, duration: 2200, ease: 'Quad.easeIn', delay: 500 });
@@ -378,6 +440,12 @@ export class GameScene extends Phaser.Scene {
 
     this.collide();
 
+    if (this.buff) {
+      const frac = (this.buffUntil - this.time.now) / (this.buffUntil - this.buffStart);
+      if (frac <= 0) this.endBuff();
+      else this.hud.setBuff(GUESTS[this.buff].buff, frac);
+    }
+
     this.hud.update({
       hp: p.hp,
       lives: this.run.lives,
@@ -423,6 +491,11 @@ export class GameScene extends Phaser.Scene {
       for (const pk of this.pickups) {
         if (pk.dead) continue;
         if (Math.hypot(pk.x - p.x, pk.y - p.y) < 50 && Math.abs(pk.y - p.y) < 30) {
+          if (pk instanceof MicPickup) {
+            pk.remove();
+            this.startGuest();
+            continue;
+          }
           p.hp = Math.min(PLAYER.hp, p.hp + PICKUP_HEAL);
           p.updateFrame();
           this.fx.floatText(pk.x, pk.y, `+${PICKUP_HEAL} HULL`, COLORS.green);

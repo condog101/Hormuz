@@ -8,6 +8,10 @@ export class Player extends Phaser.GameObjects.Sprite {
   invulnUntil = 0;
   sinking = false;
   flank = false;
+  /** Fire cooldown multiplier (the Ice Cube feature halves it). */
+  fireMult = 1;
+  /** While set, the ship wears this tint instead of the invulnerability flicker. */
+  buffTint: number | null = null;
   private fireReadyAt = 0;
   private bobT = 0;
   private wake: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -62,7 +66,13 @@ export class Player extends Phaser.GameObjects.Sprite {
     this.turret.setPosition(t.x, t.y + bob).setRotation(aim);
     this.wake.setPosition(this.x - 58, this.y);
     this.wake.frequency = this.flank ? 10 : 30;
-    this.alpha = this.invulnerable && Math.floor(this.scene_.time.now / 90) % 2 === 0 ? 0.45 : 1;
+    if (this.buffTint !== null) {
+      this.alpha = 1;
+      this.setTint(this.buffTint);
+      this.turret.setTint(this.buffTint);
+    } else {
+      this.alpha = this.invulnerable && Math.floor(this.scene_.time.now / 90) % 2 === 0 ? 0.45 : 1;
+    }
     this.turret.alpha = this.alpha;
   }
 
@@ -73,7 +83,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   canFire(now: number): boolean {
     if (this.sinking || now < this.fireReadyAt) return false;
-    this.fireReadyAt = now + PLAYER.fireCooldownMs;
+    this.fireReadyAt = now + PLAYER.fireCooldownMs * this.fireMult;
     return true;
   }
 

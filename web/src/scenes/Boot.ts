@@ -32,6 +32,8 @@ const SHEETS: [string, number, number][] = [
   ['title_logo', 232, 104],
   ['advisory', 48, 32],
   ['lowrider', 24, 12],
+  ['guests', 64, 64],
+  ['mic', 12, 12],
 ];
 
 export class BootScene extends Phaser.Scene {
@@ -80,6 +82,7 @@ export class BootScene extends Phaser.Scene {
     strip('drone', 0, 1, 12);
     strip('missile', 0, 1, 16);
     strip('pickup', 0, 1, 3);
+    strip('mic', 0, 1, 3);
     strip('destroyer', 3, 8, 4, 0, 'destroyer_sink');
     // hydraulics: level, front up, level, rear up
     a.create({ key: 'lowrider_red', frames: a.generateFrameNumbers('lowrider', { frames: [0, 1, 0, 2] }), frameRate: 6, repeat: -1 });

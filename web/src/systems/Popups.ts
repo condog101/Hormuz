@@ -8,6 +8,16 @@ import { COLORS, FONT, panel, text } from './UI';
 const W = 440;
 const H = 156;
 
+/** Who is on the line: portrait sheet, the frame they rest on and the frame they talk on. */
+export interface Speaker {
+  name: string;
+  key: string;
+  rest: number;
+  talk: number;
+}
+
+const DON: Speaker = { name: 'BIG DON', key: 'potus', rest: 0, talk: 1 };
+
 /**
  * "INCOMING - BIG DON": a portrait slides in and types out a line.
  * The game keeps running underneath; the interruption is the joke.
@@ -29,6 +39,9 @@ export class Popups {
   private blinkAt = 0;
   /** Portrait frame Big Don rests on for the current line (0 default, 4 shades + grin). */
   private restFrame = 0;
+  private speaker: Speaker = DON;
+  private hideTimer: Phaser.Time.TimerEvent | null = null;
+  private onDone: (() => void) | null = null;
 
   constructor(private scene: Phaser.Scene) {
     const s = scene;
@@ -57,13 +70,30 @@ export class Popups {
     this.show(tag);
   }
 
+  /** A guest takes the line: cuts off whatever is showing and types `line` under a gold banner. */
+  say(speaker: Speaker, line: string, onDone?: () => void) {
+    this.hideTimer?.remove();
+    this.scene.tweens.killTweensOf([this.root, this.banner]);
+    this.banner.setAlpha(1);
+    this.present(renderLine(line), speaker, speaker.rest);
+    this.onDone = onDone ?? null;
+  }
+
   private show(tag: QuoteTag) {
     const q = pickQuote(tag, this.recent);
     this.recent = [q.text, ...this.recent].slice(0, 12);
+    this.present(renderLine(q.text), DON, HYPE_TAGS.has(tag) ? 4 : 0);
+  }
+
+  private present(fullText: string, speaker: Speaker, restFrame: number) {
     this.busy = true;
-    this.full = renderLine(q.text);
-    this.restFrame = HYPE_TAGS.has(tag) ? 4 : 0;
-    this.portrait.setFrame(this.restFrame);
+    this.onDone = null;
+    this.speaker = speaker;
+    this.full = fullText;
+    this.restFrame = restFrame;
+    this.portrait.setTexture(speaker.key, restFrame);
+    if (speaker === DON) this.banner.setText('● INCOMING - BIG DON').setColor(COLORS.red);
+    else this.banner.setText(`● GUEST FEATURE - ${speaker.name}`).setColor(COLORS.gold);
     this.shown = 0;
     this.typeAcc = 0;
     this.body.setText('');
@@ -75,6 +105,7 @@ export class Popups {
   }
 
   private hide() {
+    this.hideTimer = null;
     this.scene.tweens.add({
       targets: this.root,
       x: WIDTH + 10,
@@ -102,14 +133,18 @@ export class Popups {
       if (this.mouthAcc > 90) {
         this.mouthAcc = 0;
         const ch = this.full[this.shown - 1] ?? ' ';
-        this.portrait.setFrame(/[\s.,!?]/.test(ch) ? this.restFrame : Phaser.Math.Between(1, 2));
+        const talk = this.speaker === DON ? Phaser.Math.Between(1, 2) : this.speaker.talk;
+        this.portrait.setFrame(/[\s.,!?]/.test(ch) ? this.restFrame : talk);
       }
       if (this.shown >= this.full.length) {
         this.typing = false;
         this.portrait.setFrame(this.restFrame);
-        this.scene.time.delayedCall(POPUP.holdMs, () => this.hide());
+        this.hideTimer = this.scene.time.delayedCall(POPUP.holdMs, () => this.hide());
+        const done = this.onDone;
+        this.onDone = null;
+        done?.();
       }
-    } else if (this.restFrame === 0 && now > this.blinkAt) {
+    } else if (this.speaker === DON && this.restFrame === 0 && now > this.blinkAt) {
       // no blinking behind the shades
       this.blinkAt = now + rand(1500, 3000);
       this.portrait.setFrame(3);

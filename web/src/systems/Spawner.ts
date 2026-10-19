@@ -4,6 +4,7 @@ import { Artillery } from '../entities/Artillery';
 import { Battery } from '../entities/Battery';
 import { Drone } from '../entities/Drone';
 import { Lowrider } from '../entities/Lowrider';
+import { MicPickup } from '../entities/MicPickup';
 import { Mine } from '../entities/Mine';
 import { Pickup } from '../entities/Pickup';
 import type { GameScene } from '../scenes/Game';
@@ -14,7 +15,7 @@ export class Spawner {
   active = true;
   private nextArtillery: number;
   private nextBattery: number;
-  private timers: Record<'boat' | 'mine' | 'drone' | 'pickup' | 'driveBy', number>;
+  private timers: Record<'boat' | 'mine' | 'drone' | 'pickup' | 'driveBy' | 'guest', number>;
 
   constructor(private g: GameScene, private level: LevelDef) {
     this.nextArtillery = level.artillery.spacing * 0.5;
@@ -25,6 +26,8 @@ export class Spawner {
       drone: level.dronesMs ? level.dronesMs * 0.8 : Infinity,
       pickup: level.pickupMs,
       driveBy: level.driveByMs ? level.driveByMs * 0.6 : Infinity,
+      // one golden mic per track from track 3 on
+      guest: level.n >= 3 ? rand(25000, 45000) : Infinity,
     };
   }
 
@@ -95,6 +98,10 @@ export class Spawner {
       case 'pickup':
         this.timers.pickup = L.pickupMs * rand(0.8, 1.2);
         this.g.addPickup(new Pickup(this.g, WIDTH + 20, this.waterY(WIDTH, 40)));
+        break;
+      case 'guest':
+        this.timers.guest = Infinity;
+        this.g.addPickup(new MicPickup(this.g, WIDTH + 20, this.waterY(WIDTH, 40)));
         break;
       case 'driveBy': {
         const x = WIDTH + 40;
