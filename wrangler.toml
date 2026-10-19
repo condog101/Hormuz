@@ -11,7 +11,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "hormuz-db"
-database_id = "LOCAL-PLACEHOLDER" # replaced with the real id at deploy (wrangler d1 create hormuz-db)
+database_id = "1079f596-fffb-4847-97d1-8b975cade996"
 migrations_dir = "worker/migrations"
 
 [vars]
