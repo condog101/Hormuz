@@ -13,6 +13,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   /** While set, the ship wears this tint instead of the invulnerability flicker. */
   buffTint: number | null = null;
   private fireReadyAt = 0;
+  private lastCooldownMs = 1;
   private bobT = 0;
   private wake: Phaser.GameObjects.Particles.ParticleEmitter;
 
@@ -81,10 +82,16 @@ export class Player extends Phaser.GameObjects.Sprite {
     this.setFrame(this.hp > 66 ? 0 : this.hp > 33 ? 1 : 2);
   }
 
-  canFire(now: number): boolean {
+  canFire(now: number, cooldownMs: number): boolean {
     if (this.sinking || now < this.fireReadyAt) return false;
-    this.fireReadyAt = now + PLAYER.fireCooldownMs * this.fireMult;
+    this.lastCooldownMs = cooldownMs * this.fireMult;
+    this.fireReadyAt = now + this.lastCooldownMs;
     return true;
+  }
+
+  /** 0 right after a shot, 1 when the gun is ready again (for the HUD). */
+  reloadFraction(now: number): number {
+    return 1 - Math.max(0, this.fireReadyAt - now) / this.lastCooldownMs;
   }
 
   sink(onDone: () => void) {

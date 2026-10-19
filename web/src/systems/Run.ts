@@ -1,4 +1,4 @@
-import { PLAYER } from '../data/balance';
+import { PLAYER, type WeaponKey } from '../data/balance';
 import { ENDLESS_START } from '../data/levels';
 import type { GuestKey } from '../data/quotes';
 
@@ -13,6 +13,10 @@ export interface RunState {
   playMs: number;
   /** The last guest feature, so the next one is the other guest. */
   lastGuest?: GuestKey;
+  /** Main gun in hand; carries over from track to track. */
+  weapon: WeaponKey;
+  /** Big Don has commented on a weapon switch this run. */
+  switchedWeapon?: boolean;
 }
 
 export function newRun(mode: RunState['mode'], startLevel: number): RunState {
@@ -24,5 +28,6 @@ export function newRun(mode: RunState['mode'], startLevel: number): RunState {
     lives: PLAYER.lives,
     kills: 0,
     playMs: 0,
+    weapon: 'nine',
   };
 }

@@ -1,10 +1,11 @@
-"""HUD icons, 16x16: hull, life, gold record (score), CIWS, microphone, speaker."""
+"""HUD icons, 16x16: hull, life, gold record (score), CIWS, microphone, speaker, and the three main-gun
+weapons: THE NINE (pistol), THE PUMP (shotgun), THE 808 (drum machine pad with a shockwave)."""
 from draw import bevel, circle, disc, ellipse, new, outline, poly, px, rect, strip
 from palette import C
 
 NAME = "hud_icons"
 FRAME = (16, 16)
-FRAMES = 6
+FRAMES = 9
 
 
 def hull():
@@ -82,5 +83,45 @@ def speaker():
     return img
 
 
+def nine():
+    img = new(16, 16)
+    rect(img, 2, 4, 13, 7, C["deck"])  # slide
+    rect(img, 2, 4, 13, 4, C["hull_lt"])
+    rect(img, 12, 5, 13, 5, C["black"])  # muzzle
+    poly(img, [(4, 8), (8, 8), (7, 14), (3, 14)], C["deck"])  # grip
+    rect(img, 4, 9, 6, 13, C["rock_dk"])
+    rect(img, 8, 8, 10, 10, C["deck"])  # trigger guard
+    px(img, 9, 9, (0, 0, 0, 0))
+    px(img, 4, 12, C["gold"])
+    bevel(img)
+    return outline(img)
+
+
+def pump():
+    img = new(16, 16)
+    rect(img, 1, 5, 14, 6, C["deck"])  # barrel
+    rect(img, 1, 5, 14, 5, C["hull_lt"])
+    rect(img, 7, 7, 11, 8, C["rock"])  # pump grip
+    rect(img, 7, 7, 11, 7, C["rock_lt"])
+    poly(img, [(0, 6), (5, 6), (5, 9), (1, 12), (0, 11)], C["rock"])  # stock
+    rect(img, 1, 7, 3, 9, C["rock_lt"])
+    px(img, 14, 4, C["chrome"])  # bead sight
+    bevel(img)
+    return outline(img)
+
+
+def boom():
+    img = new(16, 16)
+    rect(img, 3, 4, 12, 13, C["deck"])  # drum machine pad
+    rect(img, 3, 4, 12, 4, C["hull_dk"])
+    for x, y in [(5, 7), (8, 7), (5, 10), (8, 10)]:  # pads
+        rect(img, x, y, x + 1, y + 1, C["candy"] if (x, y) == (5, 7) else C["fire_orange"])
+    rect(img, 11, 7, 11, 11, C["gold"])
+    bevel(img)
+    outline(img)
+    circle(img, 7.5, 8.5, 7.4, C["gold"])  # shockwave
+    return img
+
+
 def build():
-    return strip([hull(), life(), record(), ciws(), mic(), speaker()])
+    return strip([hull(), life(), record(), ciws(), mic(), speaker(), nine(), pump(), boom()])

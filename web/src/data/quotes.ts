@@ -18,7 +18,8 @@ export type QuoteTag =
   | 'pickup'
   | 'ciws'
   | 'driveBy'
-  | 'guest';
+  | 'guest'
+  | 'weapon';
 
 export interface Quote {
   text: string;
@@ -204,6 +205,13 @@ export const QUOTES: Quote[] = [
     'Everybody wants to be on the album now. I am charging for the next feature. Big money.',
     'They did not even say my name. Not once. Remix it. Put my name in it twelve times.',
     'Guest features are great. The best. As long as they leave. Okay, they left. Good.',
+  ]),
+  ...q('weapon', [
+    'The nine. In the song it is a nine. Finally accurate.',
+    'A pump! Very loud. Very close. I like close. Get close to them and pump.',
+    'The 808. That is not a gun, captain, that is a drum machine. It explodes? Even better. Put it on the beat.',
+    'Switching guns mid-verse. Bold. Very bold. I switch flows all the time. Nobody notices.',
+    'Three guns. One boat. That is a trilogy, captain. We are making a trilogy.',
   ]),
   ...q('driveBy', [
     'That is a drive-by, captain. A real one. Ours was a metaphor.',

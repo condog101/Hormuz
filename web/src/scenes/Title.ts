@@ -80,7 +80,7 @@ export class TitleScene extends Phaser.Scene {
         { label: 'LINER NOTES', action: () => this.show('credits') },
       ]);
       this.layer.add(
-        text(this, 600, 450, 'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE', 8, COLORS.dim),
+        text(this, 600, 450, 'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON', 8, COLORS.dim),
       );
     } else if (view === 'levels') {
       // Album back cover: number, title, running time, best score.

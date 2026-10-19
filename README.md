@@ -26,8 +26,14 @@ npm run dev                # Vite on :5173, Worker API on :8787 (proxied at /api
 Open http://localhost:5173.
 
 Controls: WASD/arrows move, mouse aims, click/Space fires, Shift = flank speed,
-E (or right click) = CIWS burst, Esc = pause. A gamepad works too (left stick move,
-right stick aim, RT fire, B/RB CIWS, LB flank).
+E (or right click) = CIWS burst, Esc = pause, 1/2/3 or Tab/mouse wheel = switch weapon.
+A gamepad works too (left stick move, right stick aim, RT fire, B/RB CIWS, LB flank,
+Y switch weapon).
+
+Three main guns, all available from the start; the one in hand carries over between tracks:
+THE NINE (fast machine gun), THE PUMP (six-pellet short-range shotgun) and THE 808 (a mortar
+lobbed to the cursor, up to 380 px, whose blast hits everything within 70 px, shore guns
+included).
 
 ## Tests
 

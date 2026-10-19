@@ -12,11 +12,16 @@ export class Controls {
       up: K.W, down: K.S, left: K.A, right: K.D,
       up2: K.UP, down2: K.DOWN, left2: K.LEFT, right2: K.RIGHT,
       fire: K.SPACE, flank: K.SHIFT, ciws: K.E, ciws2: K.Q, pause: K.ESC, pause2: K.P,
+      w1: K.ONE, w2: K.TWO, w3: K.THREE, wNext: K.TAB,
     }) as Record<string, Phaser.Input.Keyboard.Key>;
     scene.input.on('pointermove', () => (this.usingPad = false));
     // Pointer.rightButtonReleased() stays true after a release, so latch clicks ourselves.
     scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (p.rightButtonDown()) this.rightClicked = true;
+    });
+    // Wheel events are latched too and read once per frame by weapon().
+    scene.input.on('wheel', (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
+      if (dy !== 0) this.wheel = dy > 0 ? 1 : -1;
     });
     scene.input.mouse?.disableContextMenu();
   }
@@ -65,6 +70,30 @@ export class Controls {
     return this.aimAngle;
   }
 
+  /** Where the player is aiming in the world: the pointer, or 300 px along the stick on a gamepad. */
+  aimPoint(tx: number, ty: number): { x: number; y: number } {
+    if (this.usingPad) return { x: tx + Math.cos(this.aimAngle) * 300, y: ty + Math.sin(this.aimAngle) * 300 };
+    const p = this.scene.input.activePointer;
+    return { x: p.worldX, y: p.worldY };
+  }
+
+  /** Weapon switch this frame: a direct pick (1/2/3 = index 0..2) or a cycle (Tab, wheel, pad Y). */
+  weapon(): { select?: number; cycle?: 1 | -1 } {
+    const J = Phaser.Input.Keyboard.JustDown;
+    const pad = this.pad;
+    const padNow = !!(pad && pad.buttons[3]?.pressed);
+    const padFired = padNow && !this.padPrev.weapon;
+    this.padPrev.weapon = padNow;
+    const wheel = this.wheel;
+    this.wheel = 0;
+    if (J(this.keys.w1)) return { select: 0 };
+    if (J(this.keys.w2)) return { select: 1 };
+    if (J(this.keys.w3)) return { select: 2 };
+    if (J(this.keys.wNext) || padFired) return { cycle: 1 };
+    if (wheel) return { cycle: wheel };
+    return {};
+  }
+
   firing(): boolean {
     const pad = this.pad;
     return (
@@ -79,8 +108,9 @@ export class Controls {
     return this.keys.flank.isDown || !!(pad && (pad.L1 > 0 || pad.L2 > 0.3));
   }
 
-  private padPrev = { ciws: false, pause: false };
+  private padPrev = { ciws: false, pause: false, weapon: false };
   private rightClicked = false;
+  private wheel: 0 | 1 | -1 = 0;
 
   ciws(): boolean {
     const pad = this.pad;

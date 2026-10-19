@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
-import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WIDTH } from '../data/balance';
+import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
 import { ADLIBS, GUESTS, type GuestKey } from '../data/quotes';
 import { Boss } from '../entities/Boss';
 import type { Entity } from '../entities/Entity';
 import { MicPickup } from '../entities/MicPickup';
 import { Missile } from '../entities/Missile';
+import { Mortar } from '../entities/Mortar';
 import type { Pickup } from '../entities/Pickup';
 import { Player } from '../entities/Player';
 import { Round } from '../entities/Round';
@@ -53,6 +54,7 @@ export class GameScene extends Phaser.Scene {
   private rounds: Round[] = [];
   private pickups: (Pickup | MicPickup)[] = [];
   private shells: Shell[] = [];
+  private mortars: Mortar[] = [];
   private boss: Boss | null = null;
   private distance = 0;
   private length = 0;
@@ -68,6 +70,8 @@ export class GameScene extends Phaser.Scene {
   private lowHullSaid = false;
   /** Big Don comments on the first drive-by of each track. */
   private driveBySeen = false;
+  /** Main-gun shots fired this track (muzzle smoke on every 4th NINE round). */
+  private shots = 0;
   /** Running guest-feature buff. */
   private buff: GuestKey | null = null;
   private buffStart = 0;
@@ -86,6 +90,8 @@ export class GameScene extends Phaser.Scene {
     this.rounds = [];
     this.pickups = [];
     this.shells = [];
+    this.mortars = [];
+    this.shots = 0;
     this.boss = null;
     this.distance = 0;
     this.phase = 'transit';
@@ -112,6 +118,7 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, 160, (top + bot) / 2);
     this.player.invulnUntil = this.time.now + 1500;
     this.hud = new HUD(this, this.level);
+    this.hud.setWeapon(this.run.weapon);
     this.popups = new Popups(this);
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
@@ -174,6 +181,14 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.fx.splash(x, y);
       Audio.play('splash', { volume: 0.7 });
+    }
+  }
+
+  /** THE 808's blast: every live shootable enemy within `r` (plus its own radius) takes `dmg`. */
+  areaDamage(x: number, y: number, r: number, dmg: number) {
+    for (const e of [...this.enemies]) {
+      if (e.dead || !e.active || !e.shootable) continue;
+      if (Math.hypot(e.x - x, e.y - y) < r + e.radius && e.damage(dmg)) this.killed(e);
     }
   }
 
@@ -290,11 +305,55 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private fire() {
-    const m = this.player.muzzle;
-    this.rounds.push(new Round(this, m.x, m.y, this.player.turret.rotation, this.player.buffTint ?? undefined));
-    Audio.play('shoot', { volume: 0.7 });
-    this.fx.smoke(m.x, m.y);
+  private fire(key: WeaponKey) {
+    const w = WEAPONS[key];
+    const p = this.player;
+    const m = p.muzzle;
+    const aim = p.turret.rotation;
+    const tint = p.buffTint ?? undefined;
+    this.shots++;
+    if (key === 'nine') {
+      const a = aim + Phaser.Math.FloatBetween(-w.spread, w.spread);
+      this.rounds.push(new Round(this, m.x, m.y, a, { speed: w.speed, damage: w.damage, tint }));
+      Audio.play('shoot', { pitch: 1.3, volume: 0.5 });
+      if (this.shots % 4 === 0) this.fx.smoke(m.x, m.y);
+    } else if (key === 'pump') {
+      for (let i = 0; i < w.shots; i++) {
+        const a = aim - w.spread + (2 * w.spread * i) / (w.shots - 1);
+        this.rounds.push(new Round(this, m.x, m.y, a, { speed: w.speed, damage: w.damage, ttlS: w.ttlS, tint }));
+      }
+      Audio.play('pump');
+      this.fx.smoke(m.x, m.y);
+      this.fx.smoke(m.x + Math.cos(aim) * 10, m.y + Math.sin(aim) * 10);
+      this.fx.shake(0.004, 80);
+    } else {
+      // Lob to the aim point, no further than the range and never onto the land.
+      const tp = p.turretPos;
+      const target = this.controls.aimPoint(tp.x, tp.y);
+      const d = Math.hypot(target.x - m.x, target.y - m.y);
+      const k = d > w.range! ? w.range! / d : 1;
+      const tx = Phaser.Math.Clamp(m.x + (target.x - m.x) * k, 0, WIDTH);
+      const [top, bot] = this.coast.waterBand(tx - 4, tx + 4);
+      const ty = Phaser.Math.Clamp(m.y + (target.y - m.y) * k, top + 6, bot - 6);
+      this.mortars.push(new Mortar(this, m.x, m.y, tx, ty, w.flightMs!, w.radius!, w.damage));
+      Audio.play('launch', { pitch: 1.4 });
+      this.fx.smoke(m.x, m.y);
+    }
+  }
+
+  private switchWeapon(pick: { select?: number; cycle?: 1 | -1 }) {
+    const i = WEAPON_ORDER.indexOf(this.run.weapon);
+    const next = pick.select ?? (i + (pick.cycle ?? 0) + WEAPON_ORDER.length) % WEAPON_ORDER.length;
+    const key = WEAPON_ORDER[next];
+    if (!key || key === this.run.weapon) return;
+    this.run.weapon = key;
+    this.hud.setWeapon(key);
+    Audio.play('select');
+    this.fx.adlib(this.player.x, this.player.y - 34, WEAPONS[key].name);
+    if (!this.run.switchedWeapon) {
+      this.run.switchedWeapon = true;
+      this.popups.trigger('weapon');
+    }
   }
 
   private ciws() {
@@ -418,13 +477,18 @@ export class GameScene extends Phaser.Scene {
       p.step(dt, move, this.controls.aim(tp.x, tp.y), this.controls.flank());
       this.playerVel.x = (p.x - px) / dt;
       this.playerVel.y = (p.y - py) / dt;
-      if (this.controls.firing() && p.canFire(this.time.now)) this.fire();
+      const pick = this.controls.weapon();
+      if (pick.select !== undefined || pick.cycle) this.switchWeapon(pick);
+      const weapon = this.run.weapon;
+      if (this.controls.firing() && p.canFire(this.time.now, WEAPONS[weapon].cooldownMs)) this.fire(weapon);
       if (this.controls.ciws()) this.ciws();
     }
 
     // entities
     for (const s of this.shells) s.step(dt, dx);
     this.shells = this.shells.filter((s) => !s.done);
+    for (const m of this.mortars) m.step(dt, dx);
+    this.mortars = this.mortars.filter((m) => !m.done);
     const stepAll = <T extends Entity>(list: T[]) => {
       for (const e of list) {
         if (!e.active) continue;
@@ -452,6 +516,7 @@ export class GameScene extends Phaser.Scene {
       score: this.run.score,
       progress: this.distance / this.length,
       ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt),
+      reload: p.reloadFraction(this.time.now),
       boss: this.boss && !this.boss.dead ? { hp: this.boss.hp, max: this.boss.maxHp } : undefined,
     });
     this.popups.update(dtMs);
@@ -467,7 +532,7 @@ export class GameScene extends Phaser.Scene {
         if (Math.abs(e.x - r.x) < rad && Math.abs(e.y - r.y) < rad && Math.hypot(e.x - r.x, e.y - r.y) < rad) {
           r.remove();
           this.fx.explosion(r.x, r.y);
-          if (e.damage(1)) this.killed(e);
+          if (e.damage(r.power)) this.killed(e);
           break;
         }
       }

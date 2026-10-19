@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CIWS, DEPTH, PLAYER } from '../data/balance';
+import { CIWS, DEPTH, PLAYER, WEAPONS, type WeaponKey } from '../data/balance';
 import type { LevelDef } from '../data/levels';
 import { COLORS, panel, text } from './UI';
 
@@ -13,6 +13,9 @@ export class HUD {
   private ciwsIcon: Phaser.GameObjects.Image;
   private bossBar: Phaser.GameObjects.Container;
   private bossFill: Phaser.GameObjects.Rectangle;
+  private weaponIcon: Phaser.GameObjects.Image;
+  private weaponName: Phaser.GameObjects.Text;
+  private reload: Phaser.GameObjects.Rectangle;
   private buffBar: Phaser.GameObjects.Container;
   private buffLabel: Phaser.GameObjects.Text;
   private buffFill: Phaser.GameObjects.Rectangle;
@@ -44,9 +47,17 @@ export class HUD {
     // score + progress
     this.score = text(s, 20, 62, '0', 8, COLORS.text, 0).setOrigin(0, 0.5);
     this.root.add(this.score);
-    this.root.add(s.add.rectangle(130, 62, 166, 4, 0x1d2b46).setOrigin(0, 0.5));
-    this.progress = s.add.rectangle(130, 62, 0, 4, 0xffd84a).setOrigin(0, 0.5);
+    this.root.add(s.add.rectangle(88, 62, 120, 4, 0x1d2b46).setOrigin(0, 0.5));
+    this.progress = s.add.rectangle(88, 62, 0, 4, 0xffd84a).setOrigin(0, 0.5);
     this.root.add(this.progress);
+    // main gun: icon, name and a thin reload bar under the name
+    this.weaponIcon = s.add.image(220, 62, 'hud_icons', WEAPONS.nine.icon);
+    this.root.add(this.weaponIcon);
+    this.weaponName = text(s, 232, 61, WEAPONS.nine.name, 8, COLORS.text, 0).setOrigin(0, 0.5);
+    this.root.add(this.weaponName);
+    this.root.add(s.add.rectangle(232, 70, 64, 2, 0x1d2b46).setOrigin(0, 0.5));
+    this.reload = s.add.rectangle(232, 70, 64, 2, 0x4ad8ff).setOrigin(0, 0.5);
+    this.root.add(this.reload);
     // guest-feature buff (hidden unless one is running)
     this.buffBar = s.add.container(8, 86).setVisible(false).setDepth(DEPTH.hud);
     this.buffBar.add(panel(s, 0, 0, 300, 24));
@@ -63,7 +74,20 @@ export class HUD {
     this.bossBar.add(this.bossFill);
   }
 
-  update(state: { hp: number; lives: number; score: number; progress: number; ciwsReady: number; boss?: { hp: number; max: number } }) {
+  setWeapon(key: WeaponKey) {
+    this.weaponIcon.setFrame(WEAPONS[key].icon);
+    this.weaponName.setText(WEAPONS[key].name);
+  }
+
+  update(state: {
+    hp: number;
+    lives: number;
+    score: number;
+    progress: number;
+    ciwsReady: number;
+    reload: number;
+    boss?: { hp: number; max: number };
+  }) {
     const hpf = Phaser.Math.Clamp(state.hp / PLAYER.hp, 0, 1);
     this.hull.width = 118 * hpf;
     this.hull.fillColor = hpf > 0.6 ? 0x6dff8f : hpf > 0.3 ? 0xffd84a : 0xff4a4a;
@@ -71,7 +95,8 @@ export class HUD {
     this.shownScore += (state.score - this.shownScore) * 0.2;
     if (Math.abs(state.score - this.shownScore) < 1) this.shownScore = state.score;
     this.score.setText(String(Math.round(this.shownScore)).padStart(7, '0'));
-    this.progress.width = 166 * Phaser.Math.Clamp(state.progress, 0, 1);
+    this.progress.width = 120 * Phaser.Math.Clamp(state.progress, 0, 1);
+    this.reload.width = 64 * Phaser.Math.Clamp(state.reload, 0, 1);
     this.ciws.width = 26 * Phaser.Math.Clamp(state.ciwsReady, 0, 1);
     this.ciwsIcon.setAlpha(state.ciwsReady >= 1 ? 1 : 0.4);
     if (state.boss) {
