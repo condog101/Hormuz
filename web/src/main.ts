@@ -8,6 +8,7 @@ import { LevelClearScene } from './scenes/LevelClear';
 import { LevelIntroScene } from './scenes/LevelIntro';
 import { LoginScene } from './scenes/Login';
 import { TitleScene } from './scenes/Title';
+import { Audio } from './systems/Audio';
 import { Music } from './systems/Music';
 
 async function start() {
@@ -26,9 +27,12 @@ async function start() {
     pixelArt: true,
     roundPixels: true,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    input: { gamepad: true },
+    // Two sticks plus a button can be held at once on touch.
+    input: { gamepad: true, activePointers: 4 },
     scene: [BootScene, TitleScene, LoginScene, LevelIntroScene, GameScene, LevelClearScene, GameOverScene, LeaderboardScene],
   });
+  // touchstart doesn't count as a user gesture for audio on mobile; these do.
+  for (const ev of ['pointerup', 'touchend', 'keydown']) window.addEventListener(ev, () => Audio.unlock());
   if (import.meta.env.DEV) Object.assign(window, { game, Music });
 }
 

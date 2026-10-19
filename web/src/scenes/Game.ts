@@ -16,13 +16,14 @@ import { SuicideBoat } from '../entities/SuicideBoat';
 import { Audio } from '../systems/Audio';
 import { Coastline } from '../systems/Coastline';
 import { Controls } from '../systems/Controls';
+import { TOUCH } from '../systems/Device';
 import { Fx } from '../systems/Fx';
 import { HUD } from '../systems/HUD';
 import { Music } from '../systems/Music';
 import { Popups } from '../systems/Popups';
 import type { RunState } from '../systems/Run';
 import { Spawner } from '../systems/Spawner';
-import { COLORS, text } from '../systems/UI';
+import { COLORS, menu, text } from '../systems/UI';
 
 export interface LevelResult {
   run: RunState;
@@ -64,6 +65,7 @@ export class GameScene extends Phaser.Scene {
   private tookDamage = false;
   private paused = false;
   private pauseUi: Phaser.GameObjects.Container | null = null;
+  private pauseMenu: { destroy(): void } | null = null;
   /** Recent kill timestamps for the streak popup (5 kills within 3 s). */
   private killTimes: number[] = [];
   /** The low-hull line fires once per life. */
@@ -99,6 +101,7 @@ export class GameScene extends Phaser.Scene {
     this.tookDamage = false;
     this.paused = false;
     this.pauseUi = null;
+    this.pauseMenu = null;
     this.killTimes = [];
     this.lowHullSaid = false;
     this.driveBySeen = false;
@@ -119,6 +122,16 @@ export class GameScene extends Phaser.Scene {
     this.player.invulnUntil = this.time.now + 1500;
     this.hud = new HUD(this, this.level);
     this.hud.setWeapon(this.run.weapon);
+    this.controls.setWeapon(this.run.weapon);
+    // Touch only: a backgrounded phone comes back to the pause screen, not straight into fire.
+    const onHidden = () => {
+      if (TOUCH && !this.paused && this.phase !== 'over') this.togglePause();
+    };
+    this.game.events.on(Phaser.Core.Events.HIDDEN, onHidden);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(Phaser.Core.Events.HIDDEN, onHidden);
+      this.controls.destroy();
+    });
     this.popups = new Popups(this);
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
@@ -348,6 +361,7 @@ export class GameScene extends Phaser.Scene {
     if (!key || key === this.run.weapon) return;
     this.run.weapon = key;
     this.hud.setWeapon(key);
+    this.controls.setWeapon(key);
     Audio.play('select');
     this.fx.adlib(this.player.x, this.player.y - 34, WEAPONS[key].name);
     if (!this.run.switchedWeapon) {
@@ -423,13 +437,24 @@ export class GameScene extends Phaser.Scene {
       Music.duck(true);
       const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.6).setOrigin(0);
       const t = text(this, WIDTH / 2, HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
-      const h = text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim);
-      this.pauseUi = this.add.container(0, 0, [bg, t, h]).setDepth(DEPTH.popup + 10);
-      this.input.keyboard!.once('keydown-Q', () => {
-        if (!this.paused) return;
-        this.time.paused = false;
-        this.scene.start('Title');
-      });
+      this.pauseUi = this.add.container(0, 0, [bg, t]).setDepth(DEPTH.popup + 10);
+      if (TOUCH) {
+        this.pauseMenu = menu(
+          this,
+          WIDTH / 2,
+          HEIGHT / 2 + 34,
+          [
+            { label: 'RESUME', action: () => this.paused && this.togglePause() },
+            { label: 'BACK TO THE STUDIO', action: () => this.quitToTitle() },
+          ],
+          40,
+          DEPTH.popup + 11,
+        );
+      } else {
+        this.pauseUi.add(text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim));
+      }
+      this.controls.setEnabled(false);
+      this.input.keyboard!.once('keydown-Q', () => this.quitToTitle());
     } else {
       this.tweens.resumeAll();
       this.anims.resumeAll();
@@ -437,7 +462,16 @@ export class GameScene extends Phaser.Scene {
       Music.duck(false);
       this.pauseUi?.destroy();
       this.pauseUi = null;
+      this.pauseMenu?.destroy();
+      this.pauseMenu = null;
+      this.controls.setEnabled(true);
     }
+  }
+
+  private quitToTitle() {
+    if (!this.paused) return;
+    this.time.paused = false;
+    this.scene.start('Title');
   }
 
   update(_time: number, deltaMs: number) {
@@ -519,6 +553,7 @@ export class GameScene extends Phaser.Scene {
       reload: p.reloadFraction(this.time.now),
       boss: this.boss && !this.boss.dead ? { hp: this.boss.hp, max: this.boss.maxHp } : undefined,
     });
+    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt), weapon: this.run.weapon, turret: p.turretPos });
     this.popups.update(dtMs);
   }
 

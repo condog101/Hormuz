@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { getLevel } from '../data/levels';
+import { byInput } from '../systems/Device';
 import type { RunState } from '../systems/Run';
 import { COLORS, onContinue, panel, text } from '../systems/UI';
 
@@ -34,7 +35,7 @@ export class LevelIntroScene extends Phaser.Scene {
     threats.forEach(([key, f], i) => this.add.image(x0 + i * spacing, 310, key, f).setScale(PX));
 
     text(this, WIDTH / 2, 370, `SCORE ${run.score}   LIVES ${run.lives}`, 8, COLORS.text);
-    const go = text(this, WIDTH / 2, 410, 'PRESS ANY KEY TO DROP', 16, COLORS.gold);
+    const go = text(this, WIDTH / 2, 410, byInput('PRESS ANY KEY TO DROP', 'TAP TO DROP'), 16, COLORS.gold);
     this.tweens.add({ targets: go, alpha: 0.2, yoyo: true, repeat: -1, duration: 500 });
     this.cameras.main.fadeIn(250);
     onContinue(this, () => this.scene.start('Game', { run }), 250);

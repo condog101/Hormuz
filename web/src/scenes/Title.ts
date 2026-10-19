@@ -4,6 +4,7 @@ import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { LEVELS } from '../data/levels';
 import { api } from '../net/api';
 import { Audio } from '../systems/Audio';
+import { byInput, TOUCH } from '../systems/Device';
 import { Music } from '../systems/Music';
 import { newRun } from '../systems/Run';
 import { Save } from '../systems/Save';
@@ -80,7 +81,17 @@ export class TitleScene extends Phaser.Scene {
         { label: 'LINER NOTES', action: () => this.show('credits') },
       ]);
       this.layer.add(
-        text(this, 600, 450, 'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON', 8, COLORS.dim),
+        text(
+          this,
+          600,
+          450,
+          byInput(
+            'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON',
+            'LEFT THUMB MOVE  RIGHT THUMB AIM + FIRE\nTAP CIWS / GUN / FLANK ON THE RIGHT  II PAUSE',
+          ),
+          8,
+          COLORS.dim,
+        ),
       );
     } else if (view === 'levels') {
       // Album back cover: number, title, running time, best score.
@@ -111,7 +122,7 @@ export class TitleScene extends Phaser.Scene {
         { label: `SCREEN SHAKE  ${s.shake ? 'ON' : 'OFF'}`, action: () => this.toggleShake() },
         { label: 'BACK', action: () => this.show('main') },
       ]);
-      this.layer.add(text(this, WIDTH / 2, 366, 'ENTER/CLICK TO CHANGE', 8, COLORS.dim));
+      this.layer.add(text(this, WIDTH / 2, 366, byInput('ENTER/CLICK TO CHANGE', 'TAP TO CHANGE'), 8, COLORS.dim));
     } else {
       this.layer.add(panel(this, WIDTH / 2 - 300, 160, 600, 260));
       this.layer.add(
@@ -161,8 +172,29 @@ export class TitleScene extends Phaser.Scene {
 
   private start(mode: 'campaign' | 'endless', level: number) {
     Audio.unlock();
+    if (TOUCH) this.goFullscreen();
     const lvl = Math.min(level, LEVEL_COUNT);
     this.cameras.main.fadeOut(250);
     this.time.delayedCall(260, () => this.scene.start('LevelIntro', { run: newRun(mode, lvl) }));
+  }
+
+  /** Android goes fullscreen in landscape; iOS has no API and skips it. */
+  private goFullscreen() {
+    const scale = this.scale;
+    if (!document.fullscreenEnabled || scale.isFullscreen) return;
+    // The menu activates on touchstart, which doesn't grant user activation; the finger lifting does.
+    window.addEventListener(
+      'pointerup',
+      () => {
+        try {
+          scale.startFullscreen();
+          const orientation = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+          void orientation.lock?.('landscape').catch(() => undefined);
+        } catch {
+          // stay windowed
+        }
+      },
+      { once: true },
+    );
   }
 }

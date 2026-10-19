@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Audio } from './Audio';
+import { TOUCH } from './Device';
 
 export const FONT = '"Press Start 2P"';
 
@@ -39,19 +40,28 @@ export interface MenuItem {
   enabled?: boolean;
 }
 
-/** Vertical keyboard/mouse/gamepad menu. Returns a function to rebuild with new items. */
-export function menu(scene: Phaser.Scene, x: number, y: number, items: MenuItem[], gap = 30) {
+/** Vertical keyboard/mouse/gamepad/touch menu. Returns a function to rebuild with new items. */
+export function menu(scene: Phaser.Scene, x: number, y: number, items: MenuItem[], gap = 30, depth = 0) {
   let index = items.findIndex((i) => i.enabled !== false);
   const texts = items.map((item, i) => {
-    const t = text(scene, x, y + i * gap, item.label, 16, item.enabled === false ? '#4a5870' : COLORS.text);
+    const t = text(scene, x, y + i * gap, item.label, 16, item.enabled === false ? '#4a5870' : COLORS.text).setDepth(depth);
     if (item.enabled !== false) {
-      t.setInteractive({ useHandCursor: true })
+      // On touch, pad each row's hit area so the rows tile into finger-sized targets (local top-left space).
+      const R = Phaser.Geom.Rectangle;
+      const hit = TOUCH
+        ? { hitArea: new R(-12, -(gap - t.height) / 2, t.width + 24, gap), hitAreaCallback: R.Contains, useHandCursor: true }
+        : { useHandCursor: true };
+      // A touch start fires pointerdown before pointerover, so select the tapped row before activating.
+      t.setInteractive(hit)
         .on('pointerover', () => select(i))
-        .on('pointerdown', () => activate());
+        .on('pointerdown', () => {
+          select(i);
+          activate();
+        });
     }
     return t;
   });
-  const cursor = text(scene, 0, 0, '>', 16, COLORS.gold);
+  const cursor = text(scene, 0, 0, '>', 16, COLORS.gold).setDepth(depth);
 
   function select(i: number) {
     if (i !== index) Audio.play('blip');

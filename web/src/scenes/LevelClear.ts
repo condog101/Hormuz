@@ -3,6 +3,7 @@ import { LEVEL_COUNT } from '../../../shared/progress';
 import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { syncProgress } from '../net/sync';
 import { Audio } from '../systems/Audio';
+import { byInput } from '../systems/Device';
 import { Save } from '../systems/Save';
 import { COLORS, onContinue, panel, text } from '../systems/UI';
 import type { LevelResult } from './Game';
@@ -60,7 +61,7 @@ export class LevelClearScene extends Phaser.Scene {
       this.tweens.add({ targets: t, scale: 1, alpha: 1, duration: 220, ease: 'Back.easeOut' });
       Audio.play('select');
     });
-    const prompt = text(this, WIDTH / 2, 390, finishedCampaign ? 'PRESS ANY KEY' : 'PRESS ANY KEY FOR THE NEXT TRACK', 8, COLORS.gold);
+    const prompt = text(this, WIDTH / 2, 390, finishedCampaign ? byInput('PRESS ANY KEY', 'TAP TO CONTINUE') : byInput('PRESS ANY KEY FOR THE NEXT TRACK', 'TAP FOR THE NEXT TRACK'), 8, COLORS.gold);
     this.tweens.add({ targets: prompt, alpha: 0.2, yoyo: true, repeat: -1, duration: 500 });
     this.cameras.main.fadeIn(250);
     onContinue(
