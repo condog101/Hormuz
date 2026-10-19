@@ -3,7 +3,8 @@
 Orange tan, pale goggle-tan around the eyes, enormous swept golden hair, dark
 suit and an extra-long red tie, now with a red bandana, two gold rope chains
 with a $ medallion, a gold grill and a studio backdrop (foam wall, mic, ON AIR).
-Frames: 0 mouth closed, 1 half open, 2 wide open, 3 blink, 4 shades + grin.
+Big Don always wears his shades.
+Frames: 0 mouth closed, 1 half open, 2 wide open, 3 blink (hidden by the shades), 4 grin.
 """
 from draw import (
     bevel, dither, disc, ellipse, new, outline, paste, poly, px, rect, rng, strip, tiny_text,
@@ -226,15 +227,14 @@ def bandana(img):
     poly(img, [(49, 24), (52, 31), (50, 31), (48, 26)], C["candy_dk"])
 
 
-def figure(state, blink=False, cool=False):
+def figure(state, blink=False):
     img = body()
     face(img)
     hair(img)
     bandana(img)
     eyes(img, blink)
     mouth(img, state)
-    if cool:
-        shades(img)
+    shades(img)  # always on: the shades never come off, even mid-verse
     return outline(img)
 
 
@@ -243,7 +243,7 @@ def frame(i):
     if i == 3:
         fig = figure(0, blink=True)
     elif i == 4:
-        fig = figure(3, cool=True)
+        fig = figure(3)
     else:
         fig = figure(i)
     paste(bg, fig, 0, 0)
