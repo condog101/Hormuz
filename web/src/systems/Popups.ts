@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { DEPTH, POPUP, WIDTH } from '../data/balance';
-import { pickQuote, type QuoteTag } from '../data/quotes';
+import { HYPE_TAGS, isBleeped, pickQuote, renderLine, type QuoteTag } from '../data/quotes';
 import { Audio } from './Audio';
 import { rand } from './Random';
 import { COLORS, FONT, panel, text } from './UI';
@@ -27,6 +27,8 @@ export class Popups {
   private typeAcc = 0;
   private mouthAcc = 0;
   private blinkAt = 0;
+  /** Portrait frame Big Don rests on for the current line (0 default, 4 shades + grin). */
+  private restFrame = 0;
 
   constructor(private scene: Phaser.Scene) {
     const s = scene;
@@ -59,7 +61,9 @@ export class Popups {
     const q = pickQuote(tag, this.recent);
     this.recent = [q.text, ...this.recent].slice(0, 12);
     this.busy = true;
-    this.full = q.text;
+    this.full = renderLine(q.text);
+    this.restFrame = HYPE_TAGS.has(tag) ? 4 : 0;
+    this.portrait.setFrame(this.restFrame);
     this.shown = 0;
     this.typeAcc = 0;
     this.body.setText('');
@@ -90,24 +94,26 @@ export class Popups {
       while (this.typeAcc >= msPerChar && this.shown < this.full.length) {
         this.typeAcc -= msPerChar;
         this.shown++;
-        if (this.shown % 3 === 0) Audio.play('blip', { volume: 0.25, pitch: 0.6 + Math.random() * 0.3, minGapMs: 20 });
+        if (isBleeped(this.full, this.shown - 1)) Audio.play('bleep', { volume: 0.6, minGapMs: 200 });
+        else if (this.shown % 3 === 0) Audio.play('blip', { volume: 0.25, pitch: 0.6 + Math.random() * 0.3, minGapMs: 20 });
       }
       this.body.setText(this.full.slice(0, this.shown));
       this.mouthAcc += dtMs;
       if (this.mouthAcc > 90) {
         this.mouthAcc = 0;
         const ch = this.full[this.shown - 1] ?? ' ';
-        this.portrait.setFrame(/[\s.,!?]/.test(ch) ? 0 : Phaser.Math.Between(1, 2));
+        this.portrait.setFrame(/[\s.,!?]/.test(ch) ? this.restFrame : Phaser.Math.Between(1, 2));
       }
       if (this.shown >= this.full.length) {
         this.typing = false;
-        this.portrait.setFrame(0);
+        this.portrait.setFrame(this.restFrame);
         this.scene.time.delayedCall(POPUP.holdMs, () => this.hide());
       }
-    } else if (now > this.blinkAt) {
+    } else if (this.restFrame === 0 && now > this.blinkAt) {
+      // no blinking behind the shades
       this.blinkAt = now + rand(1500, 3000);
       this.portrait.setFrame(3);
-      this.scene.time.delayedCall(120, () => this.portrait.setFrame(0));
+      this.scene.time.delayedCall(120, () => this.portrait.setFrame(this.restFrame));
     }
   }
 }

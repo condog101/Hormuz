@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
 import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WIDTH } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
+import { ADLIBS } from '../data/quotes';
 import { Boss } from '../entities/Boss';
 import type { Entity } from '../entities/Entity';
 import { Missile } from '../entities/Missile';
@@ -57,6 +58,10 @@ export class GameScene extends Phaser.Scene {
   private tookDamage = false;
   private paused = false;
   private pauseUi: Phaser.GameObjects.Container | null = null;
+  /** Recent kill timestamps for the streak popup (5 kills within 3 s). */
+  private killTimes: number[] = [];
+  /** The low-hull line fires once per life. */
+  private lowHullSaid = false;
 
   constructor() {
     super('Game');
@@ -77,6 +82,8 @@ export class GameScene extends Phaser.Scene {
     this.tookDamage = false;
     this.paused = false;
     this.pauseUi = null;
+    this.killTimes = [];
+    this.lowHullSaid = false;
     this.levelStartScore = this.run.score;
   }
 
@@ -155,7 +162,10 @@ export class GameScene extends Phaser.Scene {
     this.fx.shake(0.008, 180);
     Audio.play('hit');
     if (p.hp <= 0) this.loseLife();
-    else if (Math.random() < 0.3) this.popups.trigger('damage');
+    else if (p.hp < 30 && !this.lowHullSaid) {
+      this.lowHullSaid = true;
+      this.popups.trigger('lowHull');
+    } else if (Math.random() < 0.3) this.popups.trigger('damage');
   }
 
   private loseLife() {
@@ -173,6 +183,7 @@ export class GameScene extends Phaser.Scene {
       } else {
         const [top, bot] = this.coast.waterBand(120, 220);
         p.respawn(160, (top + bot) / 2);
+        this.lowHullSaid = false;
       }
     });
   }
@@ -187,6 +198,17 @@ export class GameScene extends Phaser.Scene {
     this.run.kills++;
     this.addScore(KILL_POINTS[e.kind], e.x, e.y);
     Audio.play(e.kind === 'boss' ? 'bigBoom' : 'boom', { minGapMs: 40 });
+    // hype man: an ad-lib on every third kill and on every streak
+    const now = this.time.now;
+    this.killTimes = this.killTimes.filter((t) => now - t < 3000);
+    this.killTimes.push(now);
+    let adlib = this.run.kills % 3 === 0;
+    if (this.killTimes.length >= 5) {
+      this.killTimes = [];
+      this.popups.trigger('streak');
+      adlib = true;
+    }
+    if (adlib) this.fx.adlib(e.x, e.y - 22, Phaser.Utils.Array.GetRandom(ADLIBS));
     if (e.kind === 'boss') {
       this.popups.trigger('boss', true);
       this.time.delayedCall(2200, () => this.levelClear());
@@ -213,6 +235,8 @@ export class GameScene extends Phaser.Scene {
       Audio.play('ciws', { volume: 0.4 });
       return;
     }
+    this.fx.adlib(p.x, p.y - 34, 'BRRRRT!');
+    if (Math.random() < 0.25) this.popups.trigger('ciws');
     targets.forEach((t, i) => {
       this.time.delayedCall(i * CIWS.burstMs, () => {
         if (t.dead || !t.active) return;
@@ -297,6 +321,7 @@ export class GameScene extends Phaser.Scene {
         this.phase = 'boss';
         this.boss = new Boss(this, this.level.n >= 10 ? 2 : 1);
         this.addEnemy(this.boss);
+        this.popups.trigger('bossIntro', true);
       } else {
         this.levelClear();
       }
@@ -384,6 +409,7 @@ export class GameScene extends Phaser.Scene {
           this.fx.floatText(pk.x, pk.y, `+${PICKUP_HEAL} HULL`, COLORS.green);
           Audio.play('pickup');
           pk.remove();
+          if (Math.random() < 0.3) this.popups.trigger('pickup');
         }
       }
     }

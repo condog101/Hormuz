@@ -42,8 +42,8 @@ export const DAMAGE = {
 export const PICKUP_HEAL = 30;
 
 export const POPUP = {
-  minGapMs: 40_000,
-  maxGapMs: 70_000,
+  minGapMs: 30_000,
+  maxGapMs: 55_000,
   typeMs: 4000,
   holdMs: 2600,
   damageChance: 0.3,

@@ -18,6 +18,8 @@ const DEFS = {
   death: [1, 0.05, 110, 0.05, 0.6, 1.2, 4, 0.8, -1, 0, 0, 0, 0, 1, 0, 0.3, 0.2, 0.5, 0.3],
   select: [0.4, 0, 880, 0, 0.02, 0.05, 1, 1, 0, 0, 440, 0.03],
   blip: [0.2, 0, 1200, 0, 0.005, 0.02, 1],
+  // Censor tone: 1 kHz sine, held; retriggered while the typewriter is inside a bleeped word.
+  bleep: [0.5, 0, 1000, 0.005, 0.25, 0.02, 0],
   launch: [0.6, 0.1, 300, 0.05, 0.3, 0.4, 4, 1, 4, 0, 0, 0, 0, 1.5, 0, 0, 0, 0.6],
   bossAlarm: [0.6, 0, 200, 0.05, 0.4, 0.2, 2, 1, 0, 0, 100, 0.2, 0.25, 0, 0, 0, 0, 0.9],
 } satisfies Record<string, number[]>;

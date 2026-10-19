@@ -43,6 +43,19 @@ export class Fx {
     this.scene.tweens.add({ targets: t, y: y - 28, alpha: 0, duration: 900, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
   }
 
+  /** Hype-man ad-lib: big gold word, random tilt, pops in and floats off. Pure visual. */
+  adlib(x: number, y: number, word: string) {
+    const t = this.scene.add
+      .text(x, y, word, { fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#ffd84a' })
+      .setOrigin(0.5)
+      .setStroke('#000', 4)
+      .setAngle(Phaser.Math.Between(-8, 8))
+      .setScale(0.3)
+      .setDepth(DEPTH.fx + 2);
+    this.scene.tweens.add({ targets: t, scale: 1, duration: 160, ease: 'Back.easeOut' });
+    this.scene.tweens.add({ targets: t, y: y - 28, alpha: 0, duration: 900, delay: 220, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
+  }
+
   shake(intensity = 0.006, ms = 160) {
     if (Save.progress.settings.shake) this.scene.cameras.main.shake(ms, intensity);
   }
