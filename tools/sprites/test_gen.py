@@ -41,6 +41,7 @@ EXPECTED = {
     "tiles": (16, 16, 23),
     "title_logo": (232, 104, 1),
     "advisory": (48, 32, 1),
+    "lowrider": (24, 12, 10),
 }
 OPAQUE = {"tiles", "potus", "title_logo", "advisory"}
 

@@ -8,6 +8,7 @@ export const KILL_POINTS = {
   drone: 200,
   missile: 250,
   battery: 400,
+  lowrider: 350,
   boss: 5000,
 } as const;
 

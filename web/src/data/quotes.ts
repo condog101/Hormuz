@@ -15,7 +15,8 @@ export type QuoteTag =
   | 'victory'
   | 'streak'
   | 'pickup'
-  | 'ciws';
+  | 'ciws'
+  | 'driveBy';
 
 export interface Quote {
   text: string;
@@ -147,6 +148,13 @@ export const QUOTES: Quote[] = [
     'That little gun just spun up. Beautiful spin. The best spin. More of that.',
     'Did the boat just rap? That was a flow. Mechanical flow. Nobody has it.',
     'Close-in weapon. Very close. Too close for comfort. Comfort is for the {damn} opps.',
+  ]),
+  ...q('driveBy', [
+    'That is a drive-by, captain. A real one. Ours was a metaphor.',
+    'Hydraulics! On the beach! Who paid for the road? I want to know who paid for the {damn} road.',
+    'They are bouncing the car at us. Bounce the boat back. We have hydraulics too. I think. Check.',
+    'A lowrider with a crew in it. Red bandanas. Or blue. I cannot tell from the booth. Shoot both.',
+    'Beautiful car. Twelve coats. Shame. Shoot it anyway, captain. I will buy another one.',
   ]),
 ];
 

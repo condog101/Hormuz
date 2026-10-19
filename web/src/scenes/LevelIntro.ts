@@ -26,6 +26,7 @@ export class LevelIntroScene extends Phaser.Scene {
     if (L.minesMs) threats.push(['mine', 0]);
     if (L.dronesMs) threats.push(['drone', 0]);
     if (L.batterySpacing) threats.push(['battery', 0]);
+    if (L.driveByMs) threats.push(['lowrider', 0]);
     if (L.boss) threats.push(['boss', 0]);
     text(this, WIDTH / 2, 268, 'FEATURING', 8, COLORS.red);
     const spacing = 80;

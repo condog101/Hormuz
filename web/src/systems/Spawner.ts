@@ -3,6 +3,7 @@ import type { LevelDef } from '../data/levels';
 import { Artillery } from '../entities/Artillery';
 import { Battery } from '../entities/Battery';
 import { Drone } from '../entities/Drone';
+import { Lowrider } from '../entities/Lowrider';
 import { Mine } from '../entities/Mine';
 import { Pickup } from '../entities/Pickup';
 import type { GameScene } from '../scenes/Game';
@@ -13,7 +14,7 @@ export class Spawner {
   active = true;
   private nextArtillery: number;
   private nextBattery: number;
-  private timers: Record<'boat' | 'mine' | 'drone' | 'pickup', number>;
+  private timers: Record<'boat' | 'mine' | 'drone' | 'pickup' | 'driveBy', number>;
 
   constructor(private g: GameScene, private level: LevelDef) {
     this.nextArtillery = level.artillery.spacing * 0.5;
@@ -23,6 +24,7 @@ export class Spawner {
       mine: level.minesMs ? level.minesMs : Infinity,
       drone: level.dronesMs ? level.dronesMs * 0.8 : Infinity,
       pickup: level.pickupMs,
+      driveBy: level.driveByMs ? level.driveByMs * 0.6 : Infinity,
     };
   }
 
@@ -94,6 +96,18 @@ export class Spawner {
         this.timers.pickup = L.pickupMs * rand(0.8, 1.2);
         this.g.addPickup(new Pickup(this.g, WIDTH + 20, this.waterY(WIDTH, 40)));
         break;
+      case 'driveBy': {
+        const x = WIDTH + 40;
+        const sides: ('top' | 'bot')[] = chance(0.5) ? ['top', 'bot'] : ['bot', 'top'];
+        const side = sides.find((s) => this.g.coast.roadSpot(x, s) !== null);
+        if (!side) {
+          this.timers.driveBy = 1500; // cliffs on both sides: try again a little further on
+          break;
+        }
+        this.timers.driveBy = L.driveByMs * rand(0.8, 1.2);
+        this.g.addEnemy(new Lowrider(this.g, x, this.g.coast.roadSpot(x, side)!, side, chance(0.5)));
+        break;
+      }
     }
   }
 }

@@ -63,6 +63,8 @@ export class GameScene extends Phaser.Scene {
   private killTimes: number[] = [];
   /** The low-hull line fires once per life. */
   private lowHullSaid = false;
+  /** Big Don comments on the first drive-by of each track. */
+  private driveBySeen = false;
 
   constructor() {
     super('Game');
@@ -85,6 +87,7 @@ export class GameScene extends Phaser.Scene {
     this.pauseUi = null;
     this.killTimes = [];
     this.lowHullSaid = false;
+    this.driveBySeen = false;
     this.levelStartScore = this.run.score;
   }
 
@@ -122,6 +125,13 @@ export class GameScene extends Phaser.Scene {
 
   addHostile(e: Entity) {
     this.hostiles.push(e);
+  }
+
+  /** A lowrider has started its drive-by. */
+  onDriveBy() {
+    if (this.driveBySeen) return;
+    this.driveBySeen = true;
+    this.popups.trigger('driveBy', true);
   }
 
   addPickup(p: Pickup) {

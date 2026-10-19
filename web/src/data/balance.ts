@@ -37,6 +37,7 @@ export const DAMAGE = {
   drone: 26,
   missile: 34,
   bossGun: 12,
+  driveBy: 7,
 };
 
 export const PICKUP_HEAL = 30;

@@ -3,25 +3,8 @@ import { DAMAGE, DEPTH, PX } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
+import { HostileBullet } from './Bullet';
 import { Entity } from './Entity';
-
-/** Straight-flying hostile round (boss deck gun). */
-export class BossBullet extends Entity {
-  constructor(game: GameScene, x: number, y: number, private vx: number, private vy: number) {
-    super(game, x, y, 'shell');
-    this.setDepth(DEPTH.air).setTint(0xff6a3d).setScale(PX * 1.5);
-    this.radius = 5;
-    this.scrolls = false;
-    this.shootable = false;
-    this.contactDamage = DAMAGE.bossGun;
-  }
-
-  step(dt: number) {
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-    if (this.offscreen(20)) this.remove();
-  }
-}
 
 /**
  * Fast-attack-craft mothership. Three phases by HP: deck gun only, faster gun +
@@ -88,7 +71,7 @@ export class Boss extends Entity {
     const base = Phaser.Math.Angle.Between(this.x - 40, this.y, g.player.x, g.player.y);
     for (let i = 0; i < shots; i++) {
       const a = base + (i - (shots - 1) / 2) * 0.16;
-      g.addHostile(new BossBullet(g, this.x - 40, this.y, Math.cos(a) * 260, Math.sin(a) * 260));
+      g.addHostile(new HostileBullet(g, this.x - 40, this.y, Math.cos(a) * 260, Math.sin(a) * 260, DAMAGE.bossGun, 0xff6a3d));
     }
     Audio.play('shoot', { pitch: 0.7, volume: 0.6 });
   }

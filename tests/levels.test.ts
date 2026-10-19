@@ -35,6 +35,7 @@ describe('level table', () => {
       expect(b.artillery.fireMinMs).toBeLessThanOrEqual(a.artillery.fireMinMs);
       expect(b.artillery.spread).toBeLessThanOrEqual(a.artillery.spread);
       expect(b.artillery.lead).toBeGreaterThanOrEqual(a.artillery.lead);
+      if (a.driveByMs > 0 && b.driveByMs > 0) expect(b.driveByMs).toBeLessThanOrEqual(a.driveByMs);
     }
   });
 
@@ -44,6 +45,7 @@ describe('level table', () => {
     expect(first((n) => getLevel(n).minesMs > 0)).toBe(4);
     expect(first((n) => getLevel(n).dronesMs > 0)).toBe(5);
     expect(first((n) => getLevel(n).batterySpacing > 0)).toBe(7);
+    expect(first((n) => getLevel(n).driveByMs > 0)).toBe(2);
     expect(LEVELS.filter((l) => l.boss).map((l) => l.n)).toEqual([5, 10]);
     expect(LEVELS[9].openWater).toBe(true);
   });

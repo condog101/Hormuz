@@ -10,6 +10,7 @@ from . import (
     drone,
     explosions,
     hud_icons,
+    lowrider,
     mine,
     missile,
     pickup,
@@ -49,4 +50,5 @@ SHEETS = [
     tiles,
     title_logo,
     advisory,
+    lowrider,
 ]
