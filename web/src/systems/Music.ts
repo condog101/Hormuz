@@ -11,10 +11,13 @@ export type Track = 'title' | 'game' | 'boss';
 
 // ZzFX parameter arrays (see Audio.ts for the field order).
 const SAMPLES = {
-  kick: [1.2, 0, 62, 0.005, 0.07, 0.22, 0, 1, -16, 0, 0, 0, 0, 0, 0, 0.1, 0, 0.6, 0.05],
+  // kick: sine from 80 Hz with a slow sweep that only reaches zero after the note has decayed
+  // (a fast sweep crosses zero and bounces back up, which sounds like a spring)
+  kick: [1.3, 0, 80, 0.002, 0.05, 0.2, 0, 1, -0.5, 0, 0, 0, 0, 0, 0, 0.1, 0, 0.5, 0.08],
   snare: [0.9, 0.05, 190, 0, 0.03, 0.17, 3, 1.2, 0, 0, 0, 0, 0, 1.4, 0, 0.3, 0, 0.5, 0.03],
-  hat: [0.4, 0.05, 6500, 0, 0.008, 0.035, 4, 0, 0, 0, 0, 0, 0, 3, 0, 0.2, 0, 0.7, 0.01],
-  hatOpen: [0.35, 0.05, 6500, 0, 0.03, 0.14, 4, 0, 0, 0, 0, 0, 0, 3, 0, 0.2, 0, 0.6, 0.03],
+  // hats: darker, filtered noise kept well under the snare so they sit in the mix
+  hat: [0.2, 0.05, 2600, 0, 0.006, 0.03, 4, 0, 0, 0, 0, 0, 0, 2, 0, 0.1, 0, 0.6, 0.01, 0, 2400],
+  hatOpen: [0.18, 0.05, 2600, 0, 0.02, 0.11, 4, 0, 0, 0, 0, 0, 0, 2, 0, 0.1, 0, 0.5, 0.03, 0, 2400],
   bass: [0.9, 0, 55, 0.01, 0.22, 0.12, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7, 0.04],
 } satisfies Record<string, number[]>;
 type Voice = keyof typeof SAMPLES;
@@ -56,8 +59,8 @@ const PATTERNS: Record<Track, Pattern> = {
     swing: 0.05,
     kick: 'x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.xx',
     snare: '....x.......x.......x.......x.xx',
-    hat: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    hatOpen: '..x...x...x...x...x...x...x...x.',
+    hat: 'xoxoxoxoxoxoxoxoxoxoxoxoxoxoxoxo',
+    hatOpen: '......x.......x.......x.......x.',
     bass: [[0, 0, 2], [2, 0, 1], [4, 0, 2], [6, 0, 1], [8, 3, 2], [10, 3, 1], [12, 5, 2], [14, 6, 2], [16, 0, 2], [18, 0, 1], [20, 0, 2], [22, 0, 1], [24, -2, 2], [26, -2, 1], [28, -4, 2], [30, -5, 2]],
   },
 };
@@ -196,8 +199,8 @@ class MusicSystem {
     const o = vel(p.hatOpen);
     if (k) this.hit('kick', at, k);
     if (s) this.hit('snare', at, s);
-    if (o) this.hit('hatOpen', at, o * 0.8);
-    else if (h) this.hit('hat', at, h * 0.7);
+    if (o) this.hit('hatOpen', at, o * 0.5);
+    else if (h) this.hit('hat', at, h * 0.4);
     for (const [bs, semi, len] of p.bass) {
       if (bs !== step) continue;
       const rate = Math.pow(2, semi / 12);
