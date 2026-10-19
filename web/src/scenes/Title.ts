@@ -4,6 +4,7 @@ import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { LEVELS } from '../data/levels';
 import { api } from '../net/api';
 import { Audio } from '../systems/Audio';
+import { Music } from '../systems/Music';
 import { newRun } from '../systems/Run';
 import { Save } from '../systems/Save';
 import { COLORS, menu, panel, text } from '../systems/UI';
@@ -42,6 +43,8 @@ export class TitleScene extends Phaser.Scene {
     text(this, 132, HEIGHT - 60, 'FEAT. BIG DON', 8, COLORS.gold, 0).setOrigin(0, 0.5);
     this.layer = this.add.container(0, 0);
     this.cameras.main.fadeIn(300);
+    // Silent until the browser lets audio run (first gesture); the scheduler picks it up then.
+    Music.play('title');
     this.show(data?.view ?? 'main');
   }
 
@@ -98,12 +101,17 @@ export class TitleScene extends Phaser.Scene {
     } else if (view === 'settings') {
       const s = p.settings;
       const vol = Math.round(s.sfx * 10);
-      this.currentMenu = menu(this, WIDTH / 2, 230, [
-        { label: `SFX VOLUME  < ${'#'.repeat(vol).padEnd(10, '.')} >`, action: () => this.setVolume((vol + 2) % 12) },
+      const mus = Math.round(s.music * 10);
+      const bar = (n: number) => `< ${'#'.repeat(n).padEnd(10, '.')} >`;
+      this.layer.add(panel(this, WIDTH / 2 - 320, 170, 640, 220));
+      this.layer.add(text(this, WIDTH / 2, 196, 'MIXER', 16, COLORS.gold));
+      this.currentMenu = menu(this, WIDTH / 2, 240, [
+        { label: `SFX VOLUME    ${bar(vol)}`, action: () => this.setVolume((vol + 2) % 12) },
+        { label: `MUSIC VOLUME  ${bar(mus)}`, action: () => this.setMusicVolume((mus + 2) % 12) },
         { label: `SCREEN SHAKE  ${s.shake ? 'ON' : 'OFF'}`, action: () => this.toggleShake() },
         { label: 'BACK', action: () => this.show('main') },
       ]);
-      this.layer.add(text(this, WIDTH / 2, 340, 'ENTER/CLICK TO CHANGE', 8, COLORS.dim));
+      this.layer.add(text(this, WIDTH / 2, 366, 'ENTER/CLICK TO CHANGE', 8, COLORS.dim));
     } else {
       this.layer.add(panel(this, WIDTH / 2 - 300, 160, 600, 260));
       this.layer.add(
@@ -124,6 +132,14 @@ export class TitleScene extends Phaser.Scene {
     const v = Math.min(10, step) / 10;
     Save.update((p) => (p.settings.sfx = v));
     Audio.setVolume(v);
+    Audio.play('select');
+    this.show('settings');
+  }
+
+  private setMusicVolume(step: number) {
+    const v = Math.min(10, step) / 10;
+    Save.update((p) => (p.settings.music = v));
+    Music.setVolume(v);
     Audio.play('select');
     this.show('settings');
   }

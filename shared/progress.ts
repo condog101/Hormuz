@@ -6,6 +6,7 @@ export const LEVEL_COUNT = 10;
 export interface Settings {
   sfx: number; // 0..1
   shake: boolean;
+  music: number; // 0..1
 }
 
 export interface Progress {
@@ -17,7 +18,7 @@ export interface Progress {
   settings: Settings;
 }
 
-export const DEFAULT_SETTINGS: Settings = { sfx: 0.6, shake: true };
+export const DEFAULT_SETTINGS: Settings = { sfx: 0.6, shake: true, music: 0.5 };
 
 export function emptyProgress(): Progress {
   return {
@@ -56,6 +57,7 @@ export function sanitizeProgress(raw: unknown): Progress {
     const s = r.settings as Record<string, unknown>;
     p.settings.sfx = typeof s.sfx === 'number' && s.sfx >= 0 && s.sfx <= 1 ? s.sfx : DEFAULT_SETTINGS.sfx;
     p.settings.shake = typeof s.shake === 'boolean' ? s.shake : DEFAULT_SETTINGS.shake;
+    p.settings.music = typeof s.music === 'number' && s.music >= 0 && s.music <= 1 ? s.music : DEFAULT_SETTINGS.music;
   }
   return p;
 }

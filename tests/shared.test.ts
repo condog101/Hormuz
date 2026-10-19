@@ -27,7 +27,13 @@ describe('sanitizeProgress', () => {
     expect(p.levelBest).toEqual({ '1': 500, '2': 0, '3': 1 });
     expect(p.bestRun).toBe(0);
     expect(p.endlessUnlocked).toBe(false);
-    expect(p.settings).toEqual({ sfx: 0.6, shake: false });
+    expect(p.settings).toEqual({ sfx: 0.6, shake: false, music: 0.5 });
+  });
+
+  it('keeps a music volume and defaults it for records saved before it existed', () => {
+    expect(sanitizeProgress({ settings: { sfx: 0.2, shake: true } }).settings.music).toBe(0.5);
+    expect(sanitizeProgress({ settings: { sfx: 0.2, shake: true, music: 0.8 } }).settings.music).toBe(0.8);
+    expect(sanitizeProgress({ settings: { music: 7 } }).settings.music).toBe(0.5);
   });
 });
 

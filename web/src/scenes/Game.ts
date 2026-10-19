@@ -16,6 +16,7 @@ import { Coastline } from '../systems/Coastline';
 import { Controls } from '../systems/Controls';
 import { Fx } from '../systems/Fx';
 import { HUD } from '../systems/HUD';
+import { Music } from '../systems/Music';
 import { Popups } from '../systems/Popups';
 import type { RunState } from '../systems/Run';
 import { Spawner } from '../systems/Spawner';
@@ -100,6 +101,7 @@ export class GameScene extends Phaser.Scene {
     this.popups = new Popups(this);
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
+    Music.play('game');
     this.cameras.main.fadeIn(400);
     const n = this.level.n;
     const banner = text(this, WIDTH / 2, HEIGHT / 2 - 40, n > 10 ? `HIDDEN TRACK ${n - 10}` : `TRACK ${n}`, 24, COLORS.purple).setDepth(DEPTH.hud);
@@ -272,6 +274,7 @@ export class GameScene extends Phaser.Scene {
     // Sail off to the east.
     this.tweens.add({ targets: this.player, x: WIDTH + 120, duration: 2200, ease: 'Quad.easeIn', delay: 500 });
     this.time.delayedCall(2600, () => {
+      Music.play('title');
       this.cameras.main.fadeOut(400);
       this.time.delayedCall(450, () => this.scene.start('LevelClear', result));
     });
@@ -283,6 +286,7 @@ export class GameScene extends Phaser.Scene {
       this.tweens.pauseAll();
       this.anims.pauseAll();
       this.time.paused = true;
+      Music.duck(true);
       const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.6).setOrigin(0);
       const t = text(this, WIDTH / 2, HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
       const h = text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim);
@@ -296,6 +300,7 @@ export class GameScene extends Phaser.Scene {
       this.tweens.resumeAll();
       this.anims.resumeAll();
       this.time.paused = false;
+      Music.duck(false);
       this.pauseUi?.destroy();
       this.pauseUi = null;
     }
@@ -322,6 +327,7 @@ export class GameScene extends Phaser.Scene {
         this.boss = new Boss(this, this.level.n >= 10 ? 2 : 1);
         this.addEnemy(this.boss);
         this.popups.trigger('bossIntro', true);
+        Music.play('boss');
       } else {
         this.levelClear();
       }

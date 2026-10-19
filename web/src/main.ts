@@ -8,6 +8,7 @@ import { LevelClearScene } from './scenes/LevelClear';
 import { LevelIntroScene } from './scenes/LevelIntro';
 import { LoginScene } from './scenes/Login';
 import { TitleScene } from './scenes/Title';
+import { Music } from './systems/Music';
 
 async function start() {
   // Text is rendered to canvas, so the pixel font must be ready before the first frame.
@@ -28,7 +29,7 @@ async function start() {
     input: { gamepad: true },
     scene: [BootScene, TitleScene, LoginScene, LevelIntroScene, GameScene, LevelClearScene, GameOverScene, LeaderboardScene],
   });
-  if (import.meta.env.DEV) (window as unknown as { game: Phaser.Game }).game = game;
+  if (import.meta.env.DEV) Object.assign(window, { game, Music });
 }
 
 void start();

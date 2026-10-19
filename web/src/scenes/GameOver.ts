@@ -3,6 +3,7 @@ import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { pickQuote, renderLine } from '../data/quotes';
 import { submitRun, syncProgress } from '../net/sync';
 import { Audio } from '../systems/Audio';
+import { Music } from '../systems/Music';
 import { newRun, type RunState } from '../systems/Run';
 import { Save } from '../systems/Save';
 import { COLORS, menu, panel, text } from '../systems/UI';
@@ -29,6 +30,7 @@ export class GameOverScene extends Phaser.Scene {
     } else {
       Audio.play('death');
     }
+    this.time.delayedCall(victory ? 1200 : 350, () => Music.stop());
     const mins = Math.floor(run.playMs / 60000);
     const secs = Math.floor((run.playMs % 60000) / 1000);
     text(

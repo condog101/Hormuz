@@ -1,5 +1,6 @@
 import { emptyProgress, mergeProgress, sanitizeProgress, type Progress } from '../../../shared/progress';
 import { Audio } from './Audio';
+import { Music } from './Music';
 
 const PROGRESS_KEY = 'hormuz.progress.v1';
 const SESSION_KEY = 'hormuz.session.v1';
@@ -36,6 +37,7 @@ class SaveSystem {
     const s = read(SESSION_KEY) as Session | null;
     this.session = s && typeof s.token === 'string' && typeof s.callsign === 'string' ? s : null;
     Audio.setVolume(this.progress.settings.sfx);
+    Music.setVolume(this.progress.settings.music);
   }
 
   persist() {
