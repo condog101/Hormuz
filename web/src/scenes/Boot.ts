@@ -47,8 +47,10 @@ export class BootScene extends Phaser.Scene {
     bar.x = 480 - 150;
     text(this, 480, 250, 'LOADING', 16, COLORS.text);
     this.load.on('progress', (v: number) => (bar.width = 300 * v));
+    // Sprite URLs don't change between builds, so stamp them with the build id to bust caches.
+    const v = `?v=${import.meta.env.VITE_BUILD_ID ?? ''}`;
     for (const [key, w, h] of SHEETS) {
-      this.load.spritesheet(key, `assets/sprites/${key}.png`, { frameWidth: w, frameHeight: h });
+      this.load.spritesheet(key, `assets/sprites/${key}.png${v}`, { frameWidth: w, frameHeight: h });
     }
   }
 
