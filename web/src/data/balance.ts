@@ -76,7 +76,7 @@ export const WEAPON_ORDER: WeaponKey[] = ['nine', 'pump', 'boom'];
 /** DISS TRACKS: a rechargeable salvo of guided missiles that lock the nearest opps. */
 export const DISS = {
   rechargeMs: 12_000,
-  count: 3,
+  count: 5,
   /** Only opps this close to the ship get locked. */
   range: 600,
   damage: 4,

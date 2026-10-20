@@ -298,9 +298,9 @@ export const QUOTES: Quote[] = [
     'Beautiful car. Twelve coats. Shame. Shoot it anyway, captain. I will buy another one!',
   ]),
   ...q('diss', [
-    'DISS TRACKS! Three of them! Guided! They find the opps BY THEMSELVES. Thank you for your attention to this matter!',
+    'DISS TRACKS! Five of them! Guided! They find the opps BY THEMSELVES. Thank you for your attention to this matter!',
     'I wrote those diss tracks personally. Heat-seeking bars. The opps never had a chance. SAD for them!',
-    'Three disses, three opps. That is called EFFICIENCY. Nobody disses like me. JUST WATCH!',
+    'Five disses, five opps. That is called EFFICIENCY. Nobody disses like me. JUST WATCH!',
     'MINISTRY RECORDS just got dissed. Badly. They will need a whole album to respond. Thank you!',
     'Every diss track hits. Every one. Very accurate. More accurate than the FAKE NEWS!',
   ]),

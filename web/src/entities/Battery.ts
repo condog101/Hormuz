@@ -3,6 +3,7 @@ import { DEPTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
+import { uiSize } from '../systems/UI';
 import { Entity } from './Entity';
 
 const WARN_MS = 1400;
@@ -40,7 +41,7 @@ export class Battery extends Entity {
       this.warnUntil = now + WARN_MS;
       Audio.play('klaxon', { minGapMs: 500 });
       this.warning = g.add
-        .text(this.x, this.y, '! MISSILE !', { fontFamily: '"Press Start 2P"', fontSize: '8px', color: '#ff3b3b' })
+        .text(this.x, this.y, '! MISSILE !', { fontFamily: '"Press Start 2P"', fontSize: `${uiSize(8)}px`, color: '#ff3b3b' })
         .setOrigin(0.5)
         .setStroke('#000', 3)
         .setDepth(DEPTH.fx);

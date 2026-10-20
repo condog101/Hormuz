@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DEPTH, DISS, PLAYER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import type { LevelDef } from '../data/levels';
+import { TOUCH } from './Device';
 import { COLORS, panel, text } from './UI';
 
 export class HUD {
@@ -9,6 +10,7 @@ export class HUD {
   private lives: Phaser.GameObjects.Image[] = [];
   private score: Phaser.GameObjects.Text;
   private progress: Phaser.GameObjects.Rectangle;
+  private progressW = 120;
   private diss: Phaser.GameObjects.Rectangle;
   private dissIcon: Phaser.GameObjects.Image;
   private bossBar: Phaser.GameObjects.Container;
@@ -24,7 +26,10 @@ export class HUD {
   constructor(private scene: Phaser.Scene, level: LevelDef) {
     const s = scene;
     this.root = s.add.container(0, 0).setDepth(DEPTH.hud);
-    const W = 306;
+    // touch text is 2 px bigger: a wider panel, and the progress bar steps right of the score
+    const W = TOUCH ? 326 : 306;
+    const PROG_X = TOUCH ? 98 : 88;
+    const PROG_W = TOUCH ? 110 : 120;
     this.root.add(panel(s, 8, 8, W, 72));
     this.root.add(text(s, 20, 22, `${level.n > 10 ? `H${level.n - 10}` : `T${level.n}`} ${level.name}`, 8, COLORS.gold, 0).setOrigin(0, 0.5));
     // hull
@@ -47,8 +52,9 @@ export class HUD {
     // score + progress
     this.score = text(s, 20, 62, '0', 8, COLORS.text, 0).setOrigin(0, 0.5);
     this.root.add(this.score);
-    this.root.add(s.add.rectangle(88, 62, 120, 4, 0x1d2b46).setOrigin(0, 0.5));
-    this.progress = s.add.rectangle(88, 62, 0, 4, 0xffd84a).setOrigin(0, 0.5);
+    this.root.add(s.add.rectangle(PROG_X, 62, PROG_W, 4, 0x1d2b46).setOrigin(0, 0.5));
+    this.progress = s.add.rectangle(PROG_X, 62, 0, 4, 0xffd84a).setOrigin(0, 0.5);
+    this.progressW = PROG_W;
     this.root.add(this.progress);
     // main gun: icon, name and a thin reload bar under the name
     this.weaponIcon = s.add.image(220, 62, 'hud_icons', WEAPONS.nine.icon);
@@ -95,7 +101,7 @@ export class HUD {
     this.shownScore += (state.score - this.shownScore) * 0.2;
     if (Math.abs(state.score - this.shownScore) < 1) this.shownScore = state.score;
     this.score.setText(String(Math.round(this.shownScore)).padStart(7, '0'));
-    this.progress.width = 120 * Phaser.Math.Clamp(state.progress, 0, 1);
+    this.progress.width = this.progressW * Phaser.Math.Clamp(state.progress, 0, 1);
     this.reload.width = 64 * Phaser.Math.Clamp(state.reload, 0, 1);
     this.diss.width = 26 * Phaser.Math.Clamp(state.dissReady, 0, 1);
     // dim while charging, blinking once it's ready to fire

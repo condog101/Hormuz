@@ -7,11 +7,11 @@ import { rand } from './Random';
 import { COLORS, FONT } from './UI';
 
 // Phones leave the bottom-left to the arrow pad and use bigger text.
-const BAR_H = TOUCH ? 30 : 24;
+const BAR_H = TOUCH ? 32 : 24;
 const BAR_X = TOUCH ? 172 : 0;
 const BAR_Y = HEIGHT - BAR_H;
-const TAG_W = TOUCH ? 150 : 104;
-const TEXT_PX = TOUCH ? 12 : 8;
+const TAG_W = TOUCH ? 166 : 104;
+const TEXT_PX = TOUCH ? 14 : 8;
 /** Scroll speed, px/s. */
 const SPEED = TOUCH ? 150 : 110;
 const RED = 0xc8102e;

@@ -14,6 +14,11 @@ export const COLORS = {
   navy: 0x0d1b33,
 };
 
+/** Phones draw the 540 px canvas at roughly 0.7x, so small text gets 2 px more on touch. */
+export function uiSize(size: number): number {
+  return TOUCH && size < 16 ? size + 2 : size;
+}
+
 export function text(
   scene: Phaser.Scene,
   x: number,
@@ -23,6 +28,7 @@ export function text(
   color = COLORS.text,
   origin = 0.5,
 ): Phaser.GameObjects.Text {
+  size = uiSize(size);
   return scene.add
     .text(x, y, str, { fontFamily: FONT, fontSize: `${size}px`, color, align: 'center', lineSpacing: Math.round(size / 2) })
     .setOrigin(origin)

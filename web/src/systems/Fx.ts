@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DEPTH, PX } from '../data/balance';
 import { Save } from './Save';
+import { uiSize } from './UI';
 
 /** One-shot visual effects. Everything spawned here scrolls with the world if asked. */
 export class Fx {
@@ -36,7 +37,7 @@ export class Fx {
 
   floatText(x: number, y: number, text: string, color = '#ffe14d') {
     const t = this.scene.add
-      .text(x, y, text, { fontFamily: '"Press Start 2P"', fontSize: '8px', color })
+      .text(x, y, text, { fontFamily: '"Press Start 2P"', fontSize: `${uiSize(8)}px`, color })
       .setOrigin(0.5)
       .setStroke('#000', 3)
       .setDepth(DEPTH.fx + 1);

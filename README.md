@@ -63,8 +63,8 @@ THE NINE (fast machine gun), THE PUMP (six-pellet short-range shotgun) and THE 8
 lobbed to the cursor, up to 380 px, whose blast hits everything within 70 px, shore guns
 included).
 
-DISS TRACKS sit beside the main guns: a salvo of three gold guided missiles that lock the nearest
-three opps within 600 px (gold reticles on each) and curl round to hit them, incoming anti-ship
+DISS TRACKS sit beside the main guns: a salvo of five gold guided missiles that lock the nearest
+five opps within 600 px (gold reticles on each) and curl round to hit them, incoming anti-ship
 missiles included (the main guns can shoot those down too). It recharges over 12 s (the gold bar
 in the HUD, and under the DISS button on touch); once charged the HUD icon blinks, the DISS
 button flashes READY and DISS READY pops up over the ship. With no opps in range it says so

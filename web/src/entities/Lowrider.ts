@@ -3,6 +3,7 @@ import { DAMAGE, DEPTH, HEIGHT, TILE, WIDTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
+import { uiSize } from '../systems/UI';
 import { HostileBullet } from './Bullet';
 import { Entity } from './Entity';
 
@@ -60,7 +61,7 @@ export class Lowrider extends Entity {
       this.shotsLeft = SHOTS;
       g.onDriveBy();
       this.warning = g.add
-        .text(this.x, this.y, '! DRIVE-BY !', { fontFamily: '"Press Start 2P"', fontSize: '8px', color: '#ff3b3b' })
+        .text(this.x, this.y, '! DRIVE-BY !', { fontFamily: '"Press Start 2P"', fontSize: `${uiSize(8)}px`, color: '#ff3b3b' })
         .setOrigin(0.5)
         .setStroke('#000', 3)
         .setDepth(DEPTH.fx);

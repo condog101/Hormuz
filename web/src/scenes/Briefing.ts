@@ -62,7 +62,7 @@ export class BriefingScene extends Phaser.Scene {
     const body = this.add
       .text(LEFT, PANEL_Y + 116, renderLine(raw), {
         fontFamily: FONT,
-        fontSize: TOUCH ? '12px' : '10px',
+        fontSize: TOUCH ? '14px' : '10px',
         color: COLORS.text,
         lineSpacing: 6,
         wordWrap: { width: 600 },
@@ -80,7 +80,7 @@ export class BriefingScene extends Phaser.Scene {
         this.add
           .text(LEFT + 76, y + 22, renderLine(tw.reply.text), {
             fontFamily: FONT,
-            fontSize: TOUCH ? '10px' : '8px',
+            fontSize: TOUCH ? '12px' : '8px',
             color: COLORS.text,
             lineSpacing: 6,
             wordWrap: { width: 540 },

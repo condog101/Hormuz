@@ -456,8 +456,9 @@ export class GameScene extends Phaser.Scene {
       const t = targets[i % targets.length];
       this.time.delayedCall(i * DISS.launchGapMs, () => {
         if (p.sinking || this.phase === 'over') return;
-        const a = -Math.PI / 2 + (i - 1) * 0.5;
-        this.disses.push(new DissMissile(this, p.x - 10 + i * 10, p.y - 6, a, t.dead ? null : t));
+        // fan the salvo out evenly either side of straight up
+        const k = i - (DISS.count - 1) / 2;
+        this.disses.push(new DissMissile(this, p.x + k * 8, p.y - 6, -Math.PI / 2 + k * 0.35, t.dead ? null : t));
         Audio.play('launch', { pitch: 1.2 + i * 0.1, minGapMs: 40 });
       });
     }

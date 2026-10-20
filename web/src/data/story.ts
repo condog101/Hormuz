@@ -38,8 +38,8 @@ export const TWEETS: Record<number, Tweet[]> = {
     },
     {
       text: {
-        desktop: 'More weapons. The best. E, Q or RIGHT CLICK fires DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 12 second reload. When it flashes, USE IT. TAB switches guns.',
-        touch: 'More weapons. The best. Tap DISS for DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 12 second reload. When the button FLASHES, tap it. GUN switches main guns.',
+        desktop: 'More weapons. The best. E, Q or RIGHT CLICK fires DISS TRACKS: five guided missiles, they find the nearest five opps. Even missiles. 12 second reload. When it flashes, USE IT. TAB switches guns.',
+        touch: 'More weapons. The best. Tap DISS for DISS TRACKS: five guided missiles, they find the nearest five opps. Even missiles. 12 second reload. When the button FLASHES, tap it. GUN switches main guns.',
       },
       stats: 'REPOSTS 7   LIKES 9',
       reply: { who: 'cube', text: '@BigDon the captain did not sign up for this.' },
