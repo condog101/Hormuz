@@ -15,14 +15,13 @@ export class Controls {
     this.keys = scene.input.keyboard!.addKeys({
       up: K.W, down: K.S, left: K.A, right: K.D,
       up2: K.UP, down2: K.DOWN, left2: K.LEFT, right2: K.RIGHT,
-      fire: K.SPACE, flank: K.SHIFT, ciws: K.E, ciws2: K.Q, diss: K.R, pause: K.ESC, pause2: K.P,
+      fire: K.SPACE, flank: K.SHIFT, diss: K.R, diss2: K.E, diss3: K.Q, pause: K.ESC, pause2: K.P,
       w1: K.ONE, w2: K.TWO, w3: K.THREE, wNext: K.TAB,
     }) as Record<string, Phaser.Input.Keyboard.Key>;
     scene.input.on('pointermove', () => (this.usingPad = false));
     // Pointer.rightButtonReleased() stays true after a release, so latch clicks ourselves.
     scene.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
-      if (p.rightButtonDown()) this.rightClicked = true;
-      if (p.middleButtonDown()) this.middleClicked = true;
+      if (p.rightButtonDown() || p.middleButtonDown()) this.dissClicked = true;
     });
     // Wheel events are latched too and read once per frame by weapon().
     scene.input.on('wheel', (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
@@ -118,38 +117,21 @@ export class Controls {
     return this.keys.flank.isDown || !!this.touch?.flank || !!(pad && (pad.L1 > 0 || pad.L2 > 0.3));
   }
 
-  private padPrev = { ciws: false, diss: false, pause: false, weapon: false };
-  private rightClicked = false;
-  private middleClicked = false;
+  private padPrev = { diss: false, pause: false, weapon: false };
+  private dissClicked = false;
   private wheel: 0 | 1 | -1 = 0;
 
-  ciws(): boolean {
-    const pad = this.pad;
-    const padNow = !!(pad && (pad.B || pad.R1 > 0));
-    const fired = padNow && !this.padPrev.ciws;
-    this.padPrev.ciws = padNow;
-    const clicked = this.rightClicked;
-    this.rightClicked = false;
-    const tapped = !!this.touch?.takeCiws();
-    return (
-      Phaser.Input.Keyboard.JustDown(this.keys.ciws) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.ciws2) ||
-      clicked ||
-      fired ||
-      tapped
-    );
-  }
-
-  /** DISS TRACKS: R, middle click, pad X or the DISS button. */
+  /** DISS TRACKS: R / E / Q, right or middle click, pad X / B / RB or the DISS button. */
   diss(): boolean {
     const pad = this.pad;
-    const padNow = !!(pad && pad.buttons[2]?.pressed);
+    const padNow = !!(pad && (pad.buttons[2]?.pressed || pad.B || pad.R1 > 0));
     const fired = padNow && !this.padPrev.diss;
     this.padPrev.diss = padNow;
-    const clicked = this.middleClicked;
-    this.middleClicked = false;
+    const clicked = this.dissClicked;
+    this.dissClicked = false;
     const tapped = !!this.touch?.takeDiss();
-    return Phaser.Input.Keyboard.JustDown(this.keys.diss) || clicked || fired || tapped;
+    const J = Phaser.Input.Keyboard.JustDown;
+    return J(this.keys.diss) || J(this.keys.diss2) || J(this.keys.diss3) || clicked || fired || tapped;
   }
 
   /** Touch only: the dialogue card was tapped. */
@@ -172,7 +154,7 @@ export class Controls {
   }
 
   /** Touch-only hooks; no-ops with keyboard, mouse and gamepad. */
-  update(state: { ciwsReady: number; dissReady: number }) {
+  update(state: { dissReady: number }) {
     this.touch?.update(state);
   }
 

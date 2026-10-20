@@ -14,6 +14,8 @@ const REST_Y = TOUCH ? 88 : 8;
 const BODY_PX = TOUCH ? 12 : 8;
 /** Extra hold per character on touch, so a long line stays up long enough to read at arm's length. */
 const HOLD_PER_CHAR_MS = TOUCH ? 22 : 0;
+/** Card alpha while something is behind it. */
+const GHOST_ALPHA = 0.18;
 
 /** Who is on the line: portrait sheet, the frame they rest on and the frame they talk on. */
 export interface Speaker {
@@ -58,6 +60,7 @@ export class Popups {
   private onDone: (() => void) | null = null;
   private last: Shown | null = null;
   private replyTimer: Phaser.Time.TimerEvent | null = null;
+  private ghost = false;
 
   constructor(private scene: Phaser.Scene) {
     const s = scene;
@@ -139,9 +142,19 @@ export class Popups {
     this.root.setVisible(!on);
   }
 
-  /** True when the card is on screen and (x, y) is inside it. */
+  /** Where the card sits when it is in, for checking what it covers. */
+  bounds(): Phaser.Geom.Rectangle {
+    return new Phaser.Geom.Rectangle(REST_X, REST_Y, W, H);
+  }
+
+  /** Fade the card right down while an enemy (or the ship) is behind it; taps then go through to the aim. */
+  setGhost(on: boolean) {
+    this.ghost = on;
+  }
+
+  /** True when the card is on screen, solid, and (x, y) is inside it. */
   hitTest(x: number, y: number): boolean {
-    if (!this.busy || this.root.x >= WIDTH) return false;
+    if (!this.busy || this.ghost || this.root.x >= WIDTH) return false;
     return x >= this.root.x && x <= this.root.x + W && y >= this.root.y && y <= this.root.y + H;
   }
 
@@ -184,6 +197,8 @@ export class Popups {
 
   update(dtMs: number) {
     const now = this.scene.time.now;
+    const alpha = this.ghost ? GHOST_ALPHA : 1;
+    this.root.alpha += (alpha - this.root.alpha) * Math.min(1, dtMs / 90);
     if (!this.busy && now >= this.nextRandom) this.show('random');
     if (!this.busy) return;
     if (this.typing) {

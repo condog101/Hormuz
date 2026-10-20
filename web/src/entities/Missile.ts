@@ -3,7 +3,7 @@ import { DAMAGE, DEPTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Entity } from './Entity';
 
-/** Shore-launched anti-ship missile. Fast, barely steers. CIWS it or get out of the way. */
+/** Shore-launched anti-ship missile. Fast, barely steers. Shoot it down, DISS it or get out of the way. */
 export class Missile extends Entity {
   private speed = 60;
   private trail: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -13,8 +13,6 @@ export class Missile extends Entity {
     this.play('missile').setDepth(DEPTH.air).setRotation(angle);
     this.radius = 9;
     this.scrolls = false;
-    this.shootable = false;
-    this.ciwsTarget = true;
     this.contactDamage = DAMAGE.missile;
     this.kind = 'missile';
     this.trail = game.add.particles(0, 0, 'px', {

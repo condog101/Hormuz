@@ -5,7 +5,7 @@ import { BEATS, ENDING, TWEETS, type InputText } from '../web/src/data/story';
 
 const TAGS: QuoteTag[] = [
   'random', 'start', 'damage', 'lowHull', 'bossIntro', 'boss', 'death', 'clear',
-  'victory', 'streak', 'pickup', 'ciws', 'driveBy', 'weapon', 'diss',
+  'victory', 'streak', 'pickup', 'driveBy', 'weapon', 'diss',
 ];
 
 const exchanges = Object.values(GUESTS).flatMap((g) => g.exchanges);

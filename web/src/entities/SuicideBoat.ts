@@ -22,7 +22,6 @@ export class SuicideBoat extends Entity {
     this.heading = heading;
     this.radius = 12;
     this.scrolls = false;
-    this.ciwsTarget = true;
     this.contactDamage = DAMAGE.boat;
     this.kind = zig ? 'boatZig' : 'boat';
     this.wake = game.add.particles(0, 0, 'px', {

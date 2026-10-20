@@ -19,7 +19,6 @@ export type QuoteTag =
   | 'victory'
   | 'streak'
   | 'pickup'
-  | 'ciws'
   | 'driveBy'
   | 'weapon'
   | 'diss';
@@ -168,7 +167,7 @@ export const GUESTS: Record<GuestKey, { name: string; frame: number; buff: strin
   },
 };
 
-/** Hype-man ad-libs popped over kills and CIWS bursts. */
+/** Hype-man ad-libs popped over kills. */
 export const ADLIBS = ['YEAH!', 'WHAT!', 'UH!', 'OKAAAY!', 'SKRRT!', 'BRRRAP!'];
 
 const q = (tag: QuoteTag, lines: string[]): Quote[] => lines.map((text) => ({ tags: [tag], text }));
@@ -284,12 +283,6 @@ export const QUOTES: Quote[] = [
     'Certified gold record, captain. Hang it on the hull. Fix the hull with it. Both!',
     'A record in the water. Somebody is LEAKING the album. Pick it up. Investigate later.',
     'Free gold. I {damn} love free gold. Keep sailing, there is probably more!',
-  ]),
-  ...q('ciws', [
-    'BRRRT. I like that noise. Put it on the beat. Put it EVERYWHERE.',
-    'That little gun just spun up. Beautiful spin. The BEST spin. More of that!',
-    'Did the boat just rap? That was a flow. Mechanical flow. Nobody has it!',
-    'Close-in weapon. VERY close. Too close for comfort. Comfort is for the {damn} opps.',
   ]),
   ...q('weapon', [
     'The nine. In the song it is a nine. Finally ACCURATE!',

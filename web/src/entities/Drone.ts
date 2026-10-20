@@ -13,7 +13,6 @@ export class Drone extends Entity {
     this.play('drone').setDepth(DEPTH.air);
     this.radius = 14;
     this.scrolls = false;
-    this.ciwsTarget = true;
     this.contactDamage = DAMAGE.drone;
     this.kind = 'drone';
     this.shadow = game.add.image(x, y, 'drone', 0).setScale(PX).setTintFill(0x000000).setAlpha(0.25).setDepth(DEPTH.shadow);

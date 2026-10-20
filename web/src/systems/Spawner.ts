@@ -21,7 +21,7 @@ export class Spawner {
     this.nextArtillery = level.artillery.spacing * 0.5;
     this.nextBattery = level.batterySpacing > 0 ? level.batterySpacing * 0.8 : Infinity;
     this.timers = {
-      boat: 1800,
+      boat: 900,
       mine: level.minesMs ? level.minesMs : Infinity,
       drone: level.dronesMs ? level.dronesMs * 0.8 : Infinity,
       pickup: level.pickupMs,

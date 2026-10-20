@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
-import { CIWS, DAMAGE, DEPTH, DISS, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
+import { DAMAGE, DEPTH, DISS, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
 import { ADLIBS, GUESTS, type GuestKey } from '../data/quotes';
 import { BEATS, type Beat } from '../data/story';
@@ -63,8 +63,9 @@ export class GameScene extends Phaser.Scene {
   private distance = 0;
   private length = 0;
   private phase: Phase = 'transit';
-  private ciwsReadyAt = 0;
   private dissReadyAt = 0;
+  /** DISS was charged last frame (the ready cue plays on the edge). */
+  private dissWasReady = true;
   private levelStartScore = 0;
   private tookDamage = false;
   private paused = false;
@@ -106,8 +107,8 @@ export class GameScene extends Phaser.Scene {
     this.boss = null;
     this.distance = 0;
     this.phase = 'transit';
-    this.ciwsReadyAt = 0;
     this.dissReadyAt = 0;
+    this.dissWasReady = true;
     this.tookDamage = false;
     this.paused = false;
     this.pauseUi = null;
@@ -419,38 +420,6 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private ciws() {
-    const now = this.time.now;
-    if (now < this.ciwsReadyAt || this.player.sinking) return;
-    const p = this.player;
-    const targets = [...this.enemies, ...this.hostiles]
-      .filter((e) => !e.dead && e.ciwsTarget && Math.hypot(e.x - p.x, e.y - p.y) < CIWS.range)
-      .sort((a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y))
-      .slice(0, CIWS.maxTargets);
-    this.ciwsReadyAt = now + CIWS.cooldownMs;
-    if (targets.length === 0) {
-      Audio.play('ciws', { volume: 0.4 });
-      return;
-    }
-    this.fx.adlib(p.x, p.y - 34, 'BRRRRT!');
-    if (Math.random() < 0.25) this.popups.trigger('ciws');
-    targets.forEach((t, i) => {
-      this.time.delayedCall(i * CIWS.burstMs, () => {
-        if (t.dead || !t.active) return;
-        for (let k = 0; k < 4; k++) {
-          this.time.delayedCall(k * 35, () => {
-            if (!t.active) return;
-            this.fx.tracer(p.x + 10, p.y - 6, t.x + Phaser.Math.Between(-4, 4), t.y + Phaser.Math.Between(-4, 4));
-            Audio.play('ciws', { minGapMs: 25 });
-          });
-        }
-        this.time.delayedCall(140, () => {
-          if (!t.dead && t.active && t.damage(99)) this.killed(t);
-        });
-      });
-    });
-  }
-
   /** DISS TRACKS: lock the nearest opps and send a guided missile at each. Charge is kept if nothing is in range. */
   private fireDiss() {
     const now = this.time.now;
@@ -647,7 +616,6 @@ export class GameScene extends Phaser.Scene {
       if (pick.select !== undefined || pick.cycle) this.switchWeapon(pick);
       const weapon = this.run.weapon;
       if (this.controls.firing() && p.canFire(this.time.now, WEAPONS[weapon].cooldownMs)) this.fire(weapon);
-      if (this.controls.ciws()) this.ciws();
       if (this.controls.diss()) this.fireDiss();
     }
 
@@ -685,18 +653,35 @@ export class GameScene extends Phaser.Scene {
     }
 
     const dissReady = HUD.dissFraction(this.time.now, this.dissReadyAt);
+    if (dissReady >= 1 && !this.dissWasReady && !p.sinking && this.hostilesActive) {
+      Audio.play('select', { pitch: 1.6 });
+      this.fx.adlib(p.x, p.y - 34, 'DISS READY');
+    }
+    this.dissWasReady = dissReady >= 1;
+    if (TOUCH) this.popups.setGhost(!!this.popups.current && this.cardCovers());
     this.hud.update({
       hp: p.hp,
       lives: this.run.lives,
       score: this.run.score,
       progress: this.distance / this.length,
-      ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt),
       dissReady,
       reload: p.reloadFraction(this.time.now),
       boss: this.boss && !this.boss.dead ? { hp: this.boss.hp, max: this.boss.maxHp } : undefined,
     });
-    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt), dissReady });
+    this.controls.update({ dissReady });
     this.popups.update(dtMs);
+  }
+
+  /** Touch: is anything worth seeing (an opp, incoming fire, the ship) behind the dialogue card? */
+  private cardCovers(): boolean {
+    const r = this.popups.bounds();
+    Phaser.Geom.Rectangle.Inflate(r, 24, 24);
+    const inside = (o: { x: number; y: number }) => Phaser.Geom.Rectangle.Contains(r, o.x, o.y);
+    if (inside(this.player)) return true;
+    for (const e of this.enemies) if (!e.dead && e.active && inside(e)) return true;
+    for (const e of this.hostiles) if (!e.dead && e.active && inside(e)) return true;
+    // a shell's danger is where it lands: the reticle on the water
+    return this.shells.some((s) => !s.done && inside({ x: s.tx, y: s.ty }));
   }
 
   private collide() {

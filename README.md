@@ -36,15 +36,17 @@ npm run dev                # Vite on :5173, Worker API on :8787 (proxied at /api
 Open http://localhost:5173.
 
 Controls: WASD/arrows move, mouse aims, click/Space fires, Shift = flank speed,
-E (or right click) = CIWS burst, R (or middle click) = DISS TRACKS, Esc = pause,
+R / E / Q (or right or middle click) = DISS TRACKS, Esc = pause,
 1/2/3 or Tab/mouse wheel = switch weapon.
-A gamepad works too (left stick move, right stick aim, RT fire, B/RB CIWS, X DISS TRACKS,
+A gamepad works too (left stick move, right stick aim, RT fire, X/B/RB DISS TRACKS,
 LB flank, Y switch weapon).
 On phones and tablets (coarse pointer) the game shows touch controls instead: an 8-way arrow
 pad in the bottom-left moves, touching anywhere else aims the gun at that spot and fires while
-held (THE 808 lobs to it), DISS / CIWS / GUN / FLANK buttons sit on the right edge and `II` at
+held (THE 808 lobs to it), DISS / GUN / FLANK buttons sit on the right edge and `II` at
 the top pauses. Dialogue cards are wider with bigger text on phones and stay up longer; tap a
-card to freeze the game and read the line full-size, then tap again to get back to it. The pause
+card to freeze the game and read the line full-size, then tap again to get back to it. While an
+opp, incoming fire or your own ship is behind the card it fades right down and taps go through
+to the gun. The pause
 screen repeats the last line too. Add
 `?touch=1` to the URL to force the touch UI on desktop, or `?touch=0` to turn it off.
 
@@ -54,9 +56,11 @@ lobbed to the cursor, up to 380 px, whose blast hits everything within 70 px, sh
 included).
 
 DISS TRACKS sit beside the main guns: a salvo of three gold guided missiles that lock the nearest
-three opps within 600 px (gold reticles on each) and curl round to hit them. It recharges over
-12 s (the gold bar next to the CIWS in the HUD, and under the DISS button on touch). With no opps
-in range it says so and keeps the charge.
+three opps within 600 px (gold reticles on each) and curl round to hit them, incoming anti-ship
+missiles included (the main guns can shoot those down too). It recharges over 15 s (the gold bar
+in the HUD, and under the DISS button on touch); once charged the HUD icon blinks, the DISS
+button flashes READY and DISS READY pops up over the ship. With no opps in range it says so
+and keeps the charge.
 
 ## Tests
 

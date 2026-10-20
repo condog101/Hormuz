@@ -24,6 +24,7 @@ type Vec = { x: number; y: number };
 interface Button {
   root: Phaser.GameObjects.Container;
   rect: Phaser.Geom.Rectangle;
+  label: Phaser.GameObjects.Text;
 }
 
 /** Arrow pad, touch-to-aim and on-canvas buttons for the Game scene on touch devices. */
@@ -37,7 +38,6 @@ export class TouchControls {
   private aimId: number | null = null;
   private target: Vec | null = null;
   private enabled = true;
-  private ciwsTapped = false;
   private gunTapped = false;
   private pauseTapped = false;
   private dissTapped = false;
@@ -49,8 +49,9 @@ export class TouchControls {
   private dissBtn: Button;
   private dissIcon: Phaser.GameObjects.Image;
   private dissBar: Phaser.GameObjects.Rectangle;
-  private ciwsBtn: Button;
-  private ciwsIcon: Phaser.GameObjects.Image;
+  private dissLabel: Phaser.GameObjects.Text;
+  private dissRing: Phaser.GameObjects.Rectangle;
+  private dissFlash: Phaser.Tweens.Tween | null = null;
   private gunBtn: Button;
   private gunIcon: Phaser.GameObjects.Image;
   private flankBtn: Button;
@@ -71,17 +72,17 @@ export class TouchControls {
       this.arrows.push(tri);
     }
 
-    this.dissBtn = this.button(136, 'DISS');
+    this.dissBtn = this.button(182, 'DISS');
+    this.dissLabel = this.dissBtn.label;
     this.dissIcon = s.add.image(0, -10, 'hud_icons', 9).setScale(2.5);
     this.dissBar = s.add.rectangle(-30, 14, 60, 4, GOLD).setOrigin(0, 0.5);
-    this.dissBtn.root.add([this.dissIcon, s.add.rectangle(-30, 14, 60, 4, 0x1d2b46).setOrigin(0, 0.5), this.dissBar]);
-    this.ciwsBtn = this.button(228, 'CIWS');
-    this.ciwsIcon = s.add.image(0, -8, 'hud_icons', 3).setScale(3);
-    this.ciwsBtn.root.add(this.ciwsIcon);
-    this.gunBtn = this.button(320, 'GUN');
+    // gold ring that flashes while the salvo is ready
+    this.dissRing = s.add.rectangle(0, 0, BTN - 4, BTN - 4).setStrokeStyle(4, GOLD).setVisible(false);
+    this.dissBtn.root.add([this.dissIcon, s.add.rectangle(-30, 14, 60, 4, 0x1d2b46).setOrigin(0, 0.5), this.dissBar, this.dissRing]);
+    this.gunBtn = this.button(274, 'GUN');
     this.gunIcon = s.add.image(0, -8, 'hud_icons', WEAPONS.nine.icon).setScale(3);
     this.gunBtn.root.add(this.gunIcon);
-    this.flankBtn = this.button(412, 'FLANK');
+    this.flankBtn = this.button(366, 'FLANK');
     this.flankText = text(s, 0, -8, '>>', 16, COLORS.text);
     this.flankRing = s.add.rectangle(0, 0, BTN - 4, BTN - 4).setStrokeStyle(3, GOLD).setVisible(false);
     this.flankBtn.root.add([this.flankText, this.flankRing]);
@@ -104,12 +105,13 @@ export class TouchControls {
 
   private button(y: number, label: string): Button {
     const s = this.scene;
+    const caption = text(s, 0, 26, label, 8, COLORS.dim);
     const root = s.add
-      .container(BTN_X, y, [panel(s, -BTN / 2, -BTN / 2, BTN, BTN), text(s, 0, 26, label, 8, COLORS.dim)])
+      .container(BTN_X, y, [panel(s, -BTN / 2, -BTN / 2, BTN, BTN), caption])
       .setDepth(DEPTH_TOUCH)
       .setAlpha(0.85);
     const rect = new Phaser.Geom.Rectangle(BTN_X - BTN / 2 - SLOP, y - BTN / 2 - SLOP, BTN + SLOP * 2, BTN + SLOP * 2);
-    return { root, rect };
+    return { root, rect, label: caption };
   }
 
   private press(b: Button) {
@@ -129,9 +131,6 @@ export class TouchControls {
     if (hit(this.dissBtn.rect)) {
       this.dissTapped = true;
       this.press(this.dissBtn);
-    } else if (hit(this.ciwsBtn.rect)) {
-      this.ciwsTapped = true;
-      this.press(this.ciwsBtn);
     } else if (hit(this.gunBtn.rect)) {
       this.gunTapped = true;
       this.press(this.gunBtn);
@@ -220,12 +219,6 @@ export class TouchControls {
     return this.target;
   }
 
-  takeCiws(): boolean {
-    const t = this.ciwsTapped;
-    this.ciwsTapped = false;
-    return t;
-  }
-
   takeDiss(): boolean {
     const t = this.dissTapped;
     this.dissTapped = false;
@@ -259,7 +252,6 @@ export class TouchControls {
     this.enabled = on;
     if (!on) {
       this.releaseAll();
-      this.ciwsTapped = false;
       this.gunTapped = false;
       this.dissTapped = false;
       this.readTapped = false;
@@ -270,14 +262,24 @@ export class TouchControls {
     this.gunIcon.setFrame(WEAPONS[key].icon);
   }
 
-  update(state: { ciwsReady: number; dissReady: number }) {
+  update(state: { dissReady: number }) {
     // Drop pointers whose end event never reached us (touchcancel, overlay, tab switch).
     const down = (id: number) => this.scene.input.manager.pointers.some((p) => p.id === id && p.isDown);
     if (this.padId !== null && !down(this.padId)) this.releasePad();
     if (this.aimId !== null && !down(this.aimId)) this.releaseAim();
 
-    this.ciwsIcon.setAlpha(state.ciwsReady >= 1 ? 1 : 0.4);
-    this.dissIcon.setAlpha(state.dissReady >= 1 ? 1 : 0.4);
+    const ready = state.dissReady >= 1;
+    this.dissIcon.setAlpha(ready ? 1 : 0.4);
+    if (ready && !this.dissFlash) {
+      this.dissRing.setVisible(true).setAlpha(1);
+      this.dissLabel.setText('READY').setColor(COLORS.gold);
+      this.dissFlash = this.scene.tweens.add({ targets: [this.dissRing, this.dissLabel], alpha: 0.15, yoyo: true, repeat: -1, duration: 260 });
+    } else if (!ready && this.dissFlash) {
+      this.dissFlash.remove();
+      this.dissFlash = null;
+      this.dissRing.setVisible(false);
+      this.dissLabel.setText('DISS').setColor(COLORS.dim).setAlpha(1);
+    }
     this.dissBar.width = 60 * Phaser.Math.Clamp(state.dissReady, 0, 1);
     this.flankRing.setVisible(this.flank);
     this.flankText.setColor(this.flank ? COLORS.gold : COLORS.text);

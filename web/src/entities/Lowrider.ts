@@ -36,7 +36,6 @@ export class Lowrider extends Entity {
     this.hp = 2;
     this.radius = 14;
     this.scrolls = false;
-    this.ciwsTarget = true;
     this.kind = 'lowrider';
     Audio.play('horn', { volume: 0.6, minGapMs: 800 });
   }

@@ -5,8 +5,7 @@ import { ZZFX, ZZFXSound } from 'zzfx';
 //  pitchJump, pitchJumpTime, repeatTime, noise, modulation, bitCrush, delay, sustainVolume, decay, tremolo, filter]
 const DEFS = {
   shoot: [0.6, 0.05, 220, 0, 0.02, 0.12, 4, 1.6, -9, 0, 0, 0, 0, 0.6, 0, 0.1, 0, 0.6, 0.02],
-  ciws: [0.35, 0.05, 900, 0, 0.01, 0.03, 2, 0.4, 0, 0, 0, 0, 0.035, 0.3, 0, 0, 0, 0.8, 0.01],
-  // drive-by spray: lower and grittier than the CIWS
+  // drive-by spray: low and gritty
   mac: [0.4, 0.05, 480, 0, 0.012, 0.045, 4, 0.6, 0, 0, 0, 0, 0.03, 0.9, 0, 0.35, 0, 0.7, 0.01],
   // lowrider horn: two tones, high then low
   horn: [0.45, 0, 494, 0.01, 0.14, 0.06, 2, 1, 0, 0, -102, 0.09, 0, 0, 0, 0, 0, 0.9],

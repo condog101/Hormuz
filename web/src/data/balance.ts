@@ -52,16 +52,9 @@ export const WEAPONS: Record<WeaponKey, Weapon> = {
 
 export const WEAPON_ORDER: WeaponKey[] = ['nine', 'pump', 'boom'];
 
-export const CIWS = {
-  cooldownMs: 4200,
-  range: 260,
-  maxTargets: 3,
-  burstMs: 160, // per target
-};
-
 /** DISS TRACKS: a rechargeable salvo of guided missiles that lock the nearest opps. */
 export const DISS = {
-  rechargeMs: 12_000,
+  rechargeMs: 15_000,
   count: 3,
   /** Only opps this close to the ship get locked. */
   range: 600,

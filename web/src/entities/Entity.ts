@@ -12,8 +12,6 @@ export abstract class Entity extends Phaser.GameObjects.Sprite {
   scrolls = true;
   /** Main-gun rounds can hit it. */
   shootable = true;
-  /** CIWS will engage it. */
-  ciwsTarget = false;
   /** Damages the player on contact (and dies). */
   contactDamage = 0;
   kind: KillKind | null = null;
