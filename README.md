@@ -13,6 +13,10 @@ using), and rappers reply. Pac keeps sneaking calls out mid-track. The twist is 
 needed rescuing: he lives there, has a villa, and was just finishing an album. Don takes the
 credit anyway. Everything is fictional satire; swearing stays bleeped.
 
+In-game, a dialogue card only slides in for story moments (guest features and Pac's calls, with
+Don's answer). The rest of Don's running commentary scrolls past on a "DON LIVE" news ticker
+along the bottom edge, over the land, and fades away when there's nothing to say.
+
 From track 2 the shore carries a coast road, and lowriders (red Bloods or blue Crips, who have
 signed to the Ayatollah's rival label) cruise it, slow down alongside the ship, flash
 `! DRIVE-BY !` and spray a burst before peeling off. From track 3 a golden mic floats down the
@@ -95,7 +99,7 @@ The game is then live at `https://hormuz-run.<your-subdomain>.workers.dev`.
 
 - `web/src/scenes`: Boot, Title, Login, LevelIntro, Game, LevelClear, GameOver, Leaderboard
 - `web/src/entities`: player, enemies, projectiles
-- `web/src/systems`: coastline, spawner, HUD, Big Don popups (typewriter + bleeps), ad-libs, audio (ZzFX), saves
+- `web/src/systems`: coastline, spawner, HUD, story cards (typewriter + bleeps), the DON LIVE ticker, ad-libs, audio (ZzFX), saves
 - `web/src/data`: `levels.ts` (tracklist and difficulty table), `quotes.ts` (Big Don's line bank and guest exchanges), `story.ts` (tweet briefings, ending, story beats), `balance.ts`
 - `shared/`: progress merge and score plausibility, used by both client and Worker
 - `worker/`: API routes, PIN hashing, D1 queries, migrations

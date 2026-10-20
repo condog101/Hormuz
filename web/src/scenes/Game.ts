@@ -25,6 +25,7 @@ import { Music } from '../systems/Music';
 import { Popups, type Speaker } from '../systems/Popups';
 import type { RunState } from '../systems/Run';
 import { Spawner } from '../systems/Spawner';
+import { Ticker } from '../systems/Ticker';
 import { COLORS, menu, text } from '../systems/UI';
 
 export interface LevelResult {
@@ -51,6 +52,7 @@ export class GameScene extends Phaser.Scene {
   private controls!: Controls;
   private hud!: HUD;
   private popups!: Popups;
+  private ticker!: Ticker;
   private spawner!: Spawner;
   private enemies: Entity[] = [];
   private hostiles: Entity[] = [];
@@ -146,9 +148,10 @@ export class GameScene extends Phaser.Scene {
       this.controls.destroy();
     });
     this.popups = new Popups(this);
+    this.ticker = new Ticker(this);
     this.controls.setOverlayHit((x, y) => this.popups.hitTest(x, y));
     this.spawner = new Spawner(this, this.level);
-    this.time.delayedCall(1200, () => this.popups.trigger('start', true));
+    this.time.delayedCall(1200, () => this.ticker.trigger('start', true));
     Music.play('game');
     this.cameras.main.fadeIn(400);
     if (this.level.haze) {
@@ -189,7 +192,7 @@ export class GameScene extends Phaser.Scene {
   onDriveBy() {
     if (this.driveBySeen) return;
     this.driveBySeen = true;
-    this.popups.trigger('driveBy', true);
+    this.ticker.trigger('driveBy', true);
   }
 
   addPickup(p: Pickup | MicPickup) {
@@ -245,8 +248,8 @@ export class GameScene extends Phaser.Scene {
     if (p.hp <= 0) this.loseLife();
     else if (p.hp < 30 && !this.lowHullSaid) {
       this.lowHullSaid = true;
-      this.popups.trigger('lowHull');
-    } else if (Math.random() < 0.3) this.popups.trigger('damage');
+      this.ticker.trigger('lowHull');
+    } else if (Math.random() < 0.3) this.ticker.trigger('damage');
   }
 
   private loseLife() {
@@ -256,7 +259,7 @@ export class GameScene extends Phaser.Scene {
     Audio.play('death');
     this.fx.explosion(p.x, p.y, true);
     this.fx.shake(0.015, 400);
-    this.popups.trigger('death', true);
+    this.ticker.trigger('death', true);
     p.sink(() => {
       if (this.run.lives <= 0) {
         this.phase = 'over';
@@ -358,12 +361,12 @@ export class GameScene extends Phaser.Scene {
     let adlib = doubled || this.run.kills % 3 === 0;
     if (this.killTimes.length >= 5) {
       this.killTimes = [];
-      this.popups.trigger('streak');
+      this.ticker.trigger('streak');
       adlib = true;
     }
     if (adlib) this.fx.adlib(e.x, e.y - 22, Phaser.Utils.Array.GetRandom(doubled ? [...ADLIBS, 'WEST SIDE!'] : ADLIBS));
     if (e.kind === 'boss') {
-      this.popups.trigger('boss', true);
+      this.ticker.trigger('boss', true);
       this.time.delayedCall(2200, () => this.levelClear());
     }
   }
@@ -416,7 +419,7 @@ export class GameScene extends Phaser.Scene {
     this.fx.adlib(this.player.x, this.player.y - 34, WEAPONS[key].name);
     if (!this.run.switchedWeapon) {
       this.run.switchedWeapon = true;
-      this.popups.trigger('weapon');
+      this.ticker.trigger('weapon');
     }
   }
 
@@ -444,8 +447,8 @@ export class GameScene extends Phaser.Scene {
     }
     if (!this.run.usedDiss) {
       this.run.usedDiss = true;
-      this.popups.interrupt('diss');
-    } else if (Math.random() < 0.2) this.popups.trigger('diss');
+      this.ticker.trigger('diss', true);
+    } else if (Math.random() < 0.2) this.ticker.trigger('diss');
   }
 
   private levelClear() {
@@ -595,7 +598,7 @@ export class GameScene extends Phaser.Scene {
         this.addEnemy(this.boss);
         const beat = this.beats.find((b) => b.at === 'boss');
         if (beat) this.playBeat(beat);
-        else this.popups.trigger('bossIntro', true);
+        else this.ticker.trigger('bossIntro', true);
         Music.play('boss');
       } else {
         this.levelClear();
@@ -670,6 +673,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.controls.update({ dissReady });
     this.popups.update(dtMs);
+    this.ticker.update(dtMs);
   }
 
   /** Touch: is anything worth seeing (an opp, incoming fire, the ship) behind the dialogue card? */
@@ -728,7 +732,7 @@ export class GameScene extends Phaser.Scene {
           this.fx.floatText(pk.x, pk.y, `+${PICKUP_HEAL} HULL`, COLORS.green);
           Audio.play('pickup');
           pk.remove();
-          if (Math.random() < 0.3) this.popups.trigger('pickup');
+          if (Math.random() < 0.3) this.ticker.trigger('pickup');
         }
       }
     }

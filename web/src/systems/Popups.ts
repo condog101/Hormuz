@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { DEPTH, POPUP, WIDTH } from '../data/balance';
-import { HYPE_TAGS, isBleeped, pickQuote, renderLine, type QuoteTag } from '../data/quotes';
+import { isBleeped, renderLine } from '../data/quotes';
 import { Audio } from './Audio';
 import { TOUCH } from './Device';
 import { rand } from './Random';
@@ -35,8 +35,8 @@ export interface Shown {
 }
 
 /**
- * "INCOMING - BIG DON": a portrait slides in and types out a line.
- * The game keeps running underneath; the interruption is the joke.
+ * "INCOMING - BIG DON": a portrait slides in and types out a line. Story moments only (guest
+ * features and story calls); Big Don's running chatter goes on the Ticker along the bottom.
  */
 export class Popups {
   private root: Phaser.GameObjects.Container;
@@ -44,9 +44,6 @@ export class Popups {
   private body: Phaser.GameObjects.Text;
   private banner: Phaser.GameObjects.Text;
   private busy = false;
-  private nextRandom: number;
-  private lastContext = -Infinity;
-  private recent: string[] = [];
   private typing = false;
   private full = '';
   private shown = 0;
@@ -77,16 +74,6 @@ export class Popups {
       .text(158, 34, '', { fontFamily: FONT, fontSize: `${BODY_PX}px`, color: COLORS.text, lineSpacing: 6, wordWrap: { width: W - 172 } })
       .setOrigin(0);
     this.root.add(this.body);
-    this.nextRandom = s.time.now + rand(POPUP.minGapMs * 0.5, POPUP.maxGapMs * 0.6);
-  }
-
-  /** Fire a contextual line (damage, boss, etc). Respects a cooldown unless forced. */
-  trigger(tag: QuoteTag, force = false) {
-    const now = this.scene.time.now;
-    if (this.busy) return;
-    if (!force && now - this.lastContext < POPUP.contextCooldownMs) return;
-    this.lastContext = now;
-    this.show(tag);
   }
 
   /**
@@ -106,13 +93,6 @@ export class Popups {
         });
       };
     }
-  }
-
-  /** A contextual line that cuts off whatever is showing (first use of something new). */
-  interrupt(tag: QuoteTag) {
-    this.cutOff();
-    this.lastContext = this.scene.time.now;
-    this.show(tag);
   }
 
   /** Big Don says a specific line (a reply to a guest), cutting off whatever is showing. */
@@ -158,12 +138,6 @@ export class Popups {
     return x >= this.root.x && x <= this.root.x + W && y >= this.root.y && y <= this.root.y + H;
   }
 
-  private show(tag: QuoteTag) {
-    const q = pickQuote(tag, this.recent);
-    this.recent = [q.text, ...this.recent].slice(0, 12);
-    this.present(renderLine(q.text), DON, HYPE_TAGS.has(tag) ? 4 : 0);
-  }
-
   private present(fullText: string, speaker: Speaker, restFrame: number) {
     this.busy = true;
     this.onDone = null;
@@ -178,7 +152,6 @@ export class Popups {
     this.typeAcc = 0;
     this.body.setText('');
     this.typing = true;
-    this.nextRandom = this.scene.time.now + rand(POPUP.minGapMs, POPUP.maxGapMs);
     Audio.play('incoming');
     this.scene.tweens.add({ targets: this.root, x: REST_X, duration: 350, ease: 'Back.easeOut' });
     this.scene.tweens.add({ targets: this.banner, alpha: 0.3, yoyo: true, repeat: 7, duration: 180 });
@@ -199,7 +172,6 @@ export class Popups {
     const now = this.scene.time.now;
     const alpha = this.ghost ? GHOST_ALPHA : 1;
     this.root.alpha += (alpha - this.root.alpha) * Math.min(1, dtMs / 90);
-    if (!this.busy && now >= this.nextRandom) this.show('random');
     if (!this.busy) return;
     if (this.typing) {
       const msPerChar = POPUP.typeMs / Math.max(40, this.full.length);
