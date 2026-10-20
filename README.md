@@ -36,7 +36,7 @@ npm run dev                # Vite on :5173, Worker API on :8787 (proxied at /api
 Open http://localhost:5173.
 
 Controls: WASD/arrows move, mouse aims, click/Space fires, Shift = flank speed,
-R / E / Q (or right or middle click) = DISS TRACKS, Esc = pause,
+E / Q (or right click) = DISS TRACKS, Esc = pause,
 1/2/3 or Tab/mouse wheel = switch weapon.
 A gamepad works too (left stick move, right stick aim, RT fire, X/B/RB DISS TRACKS,
 LB flank, Y switch weapon).
@@ -57,7 +57,7 @@ included).
 
 DISS TRACKS sit beside the main guns: a salvo of three gold guided missiles that lock the nearest
 three opps within 600 px (gold reticles on each) and curl round to hit them, incoming anti-ship
-missiles included (the main guns can shoot those down too). It recharges over 15 s (the gold bar
+missiles included (the main guns can shoot those down too). It recharges over 12 s (the gold bar
 in the HUD, and under the DISS button on touch); once charged the HUD icon blinks, the DISS
 button flashes READY and DISS READY pops up over the ship. With no opps in range it says so
 and keeps the charge.

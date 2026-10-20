@@ -38,8 +38,8 @@ export const TWEETS: Record<number, Tweet[]> = {
     },
     {
       text: {
-        desktop: 'More weapons. The best. R, E or RIGHT CLICK fires DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 15 second reload. When it flashes, USE IT. TAB switches guns.',
-        touch: 'More weapons. The best. Tap DISS for DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 15 second reload. When the button FLASHES, tap it. GUN switches main guns.',
+        desktop: 'More weapons. The best. E, Q or RIGHT CLICK fires DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 12 second reload. When it flashes, USE IT. TAB switches guns.',
+        touch: 'More weapons. The best. Tap DISS for DISS TRACKS: three guided missiles, they find the nearest three opps. Even missiles. 12 second reload. When the button FLASHES, tap it. GUN switches main guns.',
       },
       stats: 'REPOSTS 7   LIKES 9',
       reply: { who: 'cube', text: '@BigDon the captain did not sign up for this.' },
@@ -83,7 +83,7 @@ export const TWEETS: Record<number, Tweet[]> = {
   7: [
     {
       text: {
-        desktop: 'MISSILE ALLEY. They have missiles now. When the klaxon goes, shoot the missiles down or press R to DISS them. Missiles do not care about your flow. Very rude missiles!',
+        desktop: 'MISSILE ALLEY. They have missiles now. When the klaxon goes, shoot the missiles down or press E to DISS them. Missiles do not care about your flow. Very rude missiles!',
         touch: 'MISSILE ALLEY. They have missiles now. When the klaxon goes, shoot the missiles down or tap DISS. Missiles do not care about your flow. Very rude missiles!',
       },
       stats: 'REPOSTS 5K   LIKES 12K',
