@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DAMAGE, DEPTH, HEIGHT, TILE } from '../data/balance';
+import { DAMAGE, DEPTH, HEIGHT, TILE, WIDTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
@@ -44,7 +44,7 @@ export class Lowrider extends Entity {
     const g = this.game_;
     if (this.dead) {
       this.smokeTimer -= dt;
-      if (this.smokeTimer <= 0 && this.x > 0 && this.x < 960) {
+      if (this.smokeTimer <= 0 && this.x > 0 && this.x < WIDTH) {
         this.smokeTimer = 0.5;
         g.fx.smoke(this.x + rand(-6, 6), this.y - 8);
       }

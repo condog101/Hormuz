@@ -14,7 +14,8 @@ needed rescuing: he lives there, has a villa, and was just finishing an album. D
 credit anyway. Everything is fictional satire; swearing stays bleeped.
 
 In-game, a dialogue card only slides in for story moments (guest features and Pac's calls, with
-Don's answer). The rest of Don's running commentary scrolls past on a "DON LIVE" news ticker
+Don's answer); on phones those freeze the game instead and show both lines full-size until you
+tap. The rest of Don's running commentary scrolls past on a "DON LIVE" news ticker
 along the bottom edge, over the land, and fades away when there's nothing to say.
 
 From track 2 the shore carries a coast road, and lowriders (red Bloods or blue Crips, who have
@@ -47,12 +48,15 @@ LB flank, Y switch weapon).
 On phones and tablets (coarse pointer) the game shows touch controls instead: an 8-way arrow
 pad in the bottom-left moves, touching anywhere else aims the gun at that spot and fires while
 held (THE 808 lobs to it), DISS / GUN / FLANK buttons sit on the right edge and `II` at
-the top pauses. Dialogue cards are wider with bigger text on phones and stay up longer; tap a
-card to freeze the game and read the line full-size, then tap again to get back to it. While an
-opp, incoming fire or your own ship is behind the card it fades right down and taps go through
-to the gun. The pause
-screen repeats the last line too. Add
+the top pauses. Story moments pause the game (a pause or story never eats the DISS recharge or a
+guest buff), and the pause screen repeats the last story line. Phones wider than 16:9 get a
+wider canvas (up to 1280x540) that fills the screen inside the notch-safe area instead of black
+bars at the sides. Add
 `?touch=1` to the URL to force the touch UI on desktop, or `?touch=0` to turn it off.
+
+A run has three lives across all its tracks (the hull refills every track, lives don't). Losing the
+last one ends the run; RUN IT BACK retries the track you fell off with a fresh three lives (hidden
+tracks start again from the first), and clearing a track unlocks the next one for good.
 
 Three main guns, all available from the start; the one in hand carries over between tracks:
 THE NINE (fast machine gun), THE PUMP (six-pellet short-range shotgun) and THE 808 (a mortar

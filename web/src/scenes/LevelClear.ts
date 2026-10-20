@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { LEVEL_COUNT } from '../../../shared/progress';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { ENDING } from '../data/story';
 import { syncProgress } from '../net/sync';
 import { Audio } from '../systems/Audio';
@@ -38,7 +38,7 @@ export class LevelClearScene extends Phaser.Scene {
     void syncProgress();
 
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.5);
-    panel(this, 200, 100, 560, 320);
+    panel(this, OX + 200, 100, 560, 320);
     text(this, WIDTH / 2, 140, lvl > LEVEL_COUNT ? 'HIDDEN TRACK DONE' : 'TRACK COMPLETE', 24, COLORS.gold);
     if (r.feat) text(this, WIDTH / 2, 172, `FEAT. ${r.feat}`, 8, COLORS.gold);
     const lines = [

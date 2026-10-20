@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { GUESTS, renderLine } from '../data/quotes';
 import type { InputText, Tweet } from '../data/story';
 import { Audio } from '../systems/Audio';
 import { byInput, TOUCH } from '../systems/Device';
 import { COLORS, FONT, onContinue, panel, text } from '../systems/UI';
 
-const PANEL_X = 140;
+const PANEL_X = OX + 140;
 const PANEL_Y = 96;
 const PANEL_W = 680;
 const PANEL_H = 348;

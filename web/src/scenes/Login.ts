@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { sanitizeProgress } from '../../../shared/progress';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { api, ApiError } from '../net/api';
 import { syncProgress } from '../net/sync';
 import { TOUCH } from '../systems/Device';
@@ -20,7 +20,7 @@ export class LoginScene extends Phaser.Scene {
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
     // On phones the form is its own card (heading included); on desktop it sits inside this panel.
     if (!TOUCH) {
-      panel(this, 220, 60, 520, 420);
+      panel(this, OX + 220, 60, 520, 420);
       text(this, WIDTH / 2, 100, 'SIGN TO THE LABEL', 24, COLORS.gold);
     }
 

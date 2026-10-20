@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { api } from '../net/api';
 import { Save } from '../systems/Save';
 import { COLORS, menu, panel, text } from '../systems/UI';
@@ -11,7 +11,7 @@ export class LeaderboardScene extends Phaser.Scene {
 
   create() {
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
-    panel(this, 160, 30, 640, 480);
+    panel(this, OX + 160, 30, 640, 480);
     text(this, WIDTH / 2, 64, 'THE CHARTS', 24, COLORS.gold);
     const status = text(this, WIDTH / 2, 240, 'CALLING THE CHART PEOPLE...', 8, COLORS.dim);
     text(this, WIDTH / 2, 100, ' #  MC NAME           SCORE   TRACK', 8, COLORS.dim);

@@ -2,20 +2,14 @@ import Phaser from 'phaser';
 import { DEPTH, POPUP, WIDTH } from '../data/balance';
 import { isBleeped, renderLine } from '../data/quotes';
 import { Audio } from './Audio';
-import { TOUCH } from './Device';
 import { rand } from './Random';
 import { COLORS, FONT, panel, text } from './UI';
 
-// Phones get a wider card with bigger text, parked under the HUD and clear of the touch buttons.
-const W = TOUCH ? 540 : 440;
-const H = TOUCH ? 172 : 156;
-const REST_X = TOUCH ? 316 : WIDTH - W - 8;
-const REST_Y = TOUCH ? 88 : 8;
-const BODY_PX = TOUCH ? 12 : 8;
-/** Extra hold per character on touch, so a long line stays up long enough to read at arm's length. */
-const HOLD_PER_CHAR_MS = TOUCH ? 22 : 0;
-/** Card alpha while something is behind it. */
-const GHOST_ALPHA = 0.18;
+// Desktop only: on touch, story moments freeze the game and show full-screen instead (Game.openStory).
+const W = 440;
+const H = 156;
+const REST_X = WIDTH - W - 8;
+const REST_Y = 8;
 
 /** Who is on the line: portrait sheet, the frame they rest on and the frame they talk on. */
 export interface Speaker {
@@ -57,7 +51,6 @@ export class Popups {
   private onDone: (() => void) | null = null;
   private last: Shown | null = null;
   private replyTimer: Phaser.Time.TimerEvent | null = null;
-  private ghost = false;
 
   constructor(private scene: Phaser.Scene) {
     const s = scene;
@@ -71,7 +64,7 @@ export class Popups {
     this.portrait.setCrop(0, 0, 64, 56);
     this.root.add(this.portrait);
     this.body = s.add
-      .text(158, 34, '', { fontFamily: FONT, fontSize: `${BODY_PX}px`, color: COLORS.text, lineSpacing: 6, wordWrap: { width: W - 172 } })
+      .text(158, 34, '', { fontFamily: FONT, fontSize: '8px', color: COLORS.text, lineSpacing: 6, wordWrap: { width: W - 172 } })
       .setOrigin(0);
     this.root.add(this.body);
   }
@@ -107,35 +100,14 @@ export class Popups {
     this.banner.setAlpha(1);
   }
 
-  /** The line on screen right now, or null when the card is away. */
-  get current(): Shown | null {
-    return this.busy ? this.last : null;
-  }
-
   /** The most recent line, for the pause screen. */
   get lastLine(): Shown | null {
     return this.last;
   }
 
-  /** Hide the card while the pause screen or the reader covers the game. */
+  /** Hide the card while the pause screen covers the game. */
   setHidden(on: boolean) {
     this.root.setVisible(!on);
-  }
-
-  /** Where the card sits when it is in, for checking what it covers. */
-  bounds(): Phaser.Geom.Rectangle {
-    return new Phaser.Geom.Rectangle(REST_X, REST_Y, W, H);
-  }
-
-  /** Fade the card right down while an enemy (or the ship) is behind it; taps then go through to the aim. */
-  setGhost(on: boolean) {
-    this.ghost = on;
-  }
-
-  /** True when the card is on screen, solid, and (x, y) is inside it. */
-  hitTest(x: number, y: number): boolean {
-    if (!this.busy || this.ghost || this.root.x >= WIDTH) return false;
-    return x >= this.root.x && x <= this.root.x + W && y >= this.root.y && y <= this.root.y + H;
   }
 
   private present(fullText: string, speaker: Speaker, restFrame: number) {
@@ -170,8 +142,6 @@ export class Popups {
 
   update(dtMs: number) {
     const now = this.scene.time.now;
-    const alpha = this.ghost ? GHOST_ALPHA : 1;
-    this.root.alpha += (alpha - this.root.alpha) * Math.min(1, dtMs / 90);
     if (!this.busy) return;
     if (this.typing) {
       const msPerChar = POPUP.typeMs / Math.max(40, this.full.length);
@@ -193,7 +163,7 @@ export class Popups {
       if (this.shown >= this.full.length) {
         this.typing = false;
         this.portrait.setFrame(this.restFrame);
-        this.hideTimer = this.scene.time.delayedCall(POPUP.holdMs + HOLD_PER_CHAR_MS * this.full.length, () => this.hide());
+        this.hideTimer = this.scene.time.delayedCall(POPUP.holdMs, () => this.hide());
         const done = this.onDone;
         this.onDone = null;
         done?.();

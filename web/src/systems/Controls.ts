@@ -134,16 +134,6 @@ export class Controls {
     return J(this.keys.diss) || J(this.keys.diss2) || clicked || fired || tapped;
   }
 
-  /** Touch only: the dialogue card was tapped. */
-  read(): boolean {
-    return !!this.touch?.takeRead();
-  }
-
-  /** Touch only: taps inside this test belong to an overlay (the dialogue card), not the aim. */
-  setOverlayHit(fn: (x: number, y: number) => boolean) {
-    this.touch?.setOverlayHit(fn);
-  }
-
   pause(): boolean {
     const pad = this.pad;
     const padNow = !!(pad && pad.buttons[9]?.pressed);

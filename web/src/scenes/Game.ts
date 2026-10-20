@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
-import { DAMAGE, DEPTH, DISS, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
+import { DAMAGE, DEPTH, DISS, HEIGHT, OX, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
-import { ADLIBS, GUESTS, type GuestKey } from '../data/quotes';
+import { ADLIBS, GUESTS, renderLine, type GuestKey } from '../data/quotes';
 import { BEATS, type Beat } from '../data/story';
 import { Boss } from '../entities/Boss';
 import { DissMissile } from '../entities/DissMissile';
@@ -22,7 +22,7 @@ import { TOUCH } from '../systems/Device';
 import { Fx } from '../systems/Fx';
 import { HUD } from '../systems/HUD';
 import { Music } from '../systems/Music';
-import { Popups, type Speaker } from '../systems/Popups';
+import { DON, Popups, type Shown, type Speaker } from '../systems/Popups';
 import type { RunState } from '../systems/Run';
 import { Spawner } from '../systems/Spawner';
 import { Ticker } from '../systems/Ticker';
@@ -88,8 +88,12 @@ export class GameScene extends Phaser.Scene {
   private feat: string | undefined;
   /** Story beats for this track that haven't fired yet. */
   private beats: Beat[] = [];
-  /** Touch: the full-screen dialogue reader, open while the game is frozen. */
-  private reader: Phaser.GameObjects.Container | null = null;
+  /** Touch: a story moment (guest feature or story call) shown full-screen while the game is frozen. */
+  private story: Phaser.GameObjects.Container | null = null;
+  /** The last story line, for the pause screen on touch (desktop reads the card's). */
+  private lastStory: Shown | null = null;
+  /** scene.time.now keeps running while frozen, so timers are pushed back by the frozen time. */
+  private frozenAt = 0;
 
   constructor() {
     super('Game');
@@ -122,7 +126,8 @@ export class GameScene extends Phaser.Scene {
     this.buffUntil = 0;
     this.feat = undefined;
     this.beats = this.run.mode === 'campaign' ? BEATS.filter((b) => b.level === this.run.level) : [];
-    this.reader = null;
+    this.story = null;
+    this.lastStory = null;
     this.levelStartScore = this.run.score;
   }
 
@@ -149,7 +154,6 @@ export class GameScene extends Phaser.Scene {
     });
     this.popups = new Popups(this);
     this.ticker = new Ticker(this);
-    this.controls.setOverlayHit((x, y) => this.popups.hitTest(x, y));
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.ticker.trigger('start', true));
     Music.play('game');
@@ -290,7 +294,7 @@ export class GameScene extends Phaser.Scene {
     this.endBuff();
     Audio.play('clear');
     const ex = Phaser.Utils.Array.GetRandom(guest.exchanges);
-    this.popups.say(this.guestSpeaker(k), ex.guest, ex.don);
+    this.storyMoment(this.guestSpeaker(k), ex.guest, ex.don);
     this.fx.adlib(p.x, p.y - 40, `FEAT. ${guest.name}`);
     this.buff = k;
     this.buffStart = now;
@@ -328,7 +332,19 @@ export class GameScene extends Phaser.Scene {
   /** A story beat: a guest calls in, Big Don answers five seconds after they finish. */
   private playBeat(b: Beat) {
     this.beats = this.beats.filter((x) => x !== b);
-    this.popups.say(this.guestSpeaker(b.guest), b.line, b.don, 5000);
+    this.storyMoment(this.guestSpeaker(b.guest), b.line, b.don, 5000);
+  }
+
+  /** A guest line and Big Don's answer: the slide-in card on desktop, a story pause on touch. */
+  private storyMoment(speaker: Speaker, line: string, don: string, replyDelayMs?: number) {
+    if (!TOUCH) {
+      this.popups.say(speaker, line, don, replyDelayMs);
+      return;
+    }
+    this.openStory([
+      { speaker, frame: speaker.rest, text: renderLine(line) },
+      { speaker: DON, frame: 0, text: renderLine(don) },
+    ]);
   }
 
   private endBuff() {
@@ -480,6 +496,7 @@ export class GameScene extends Phaser.Scene {
   /** Stop (or restart) the world: tweens, animations, timers, music level and the touch controls. */
   private freeze(on: boolean) {
     if (on) {
+      this.frozenAt = this.time.now;
       this.tweens.pauseAll();
       this.anims.pauseAll();
       this.time.paused = true;
@@ -487,6 +504,14 @@ export class GameScene extends Phaser.Scene {
       this.tweens.resumeAll();
       this.anims.resumeAll();
       this.time.paused = false;
+      // Don't let a pause or a story eat the DISS recharge, the guest buff or invulnerability.
+      const d = this.time.now - this.frozenAt;
+      this.dissReadyAt += d;
+      if (this.buff) {
+        this.buffStart += d;
+        this.buffUntil += d;
+      }
+      if (this.player.invulnUntil > this.frozenAt) this.player.invulnUntil += d;
     }
     Music.duck(on);
     this.controls.setEnabled(!on);
@@ -498,7 +523,7 @@ export class GameScene extends Phaser.Scene {
     if (this.paused) {
       this.freeze(true);
       const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.6).setOrigin(0);
-      const last = this.popups.lastLine;
+      const last = this.lastStory ?? this.popups.lastLine;
       const t = text(this, WIDTH / 2, last ? 150 : HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
       this.pauseUi = this.add.container(0, 0, [bg, t]).setDepth(DEPTH.popup + 10);
       if (last) {
@@ -531,29 +556,48 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** Touch: the dialogue card was tapped. Freeze the game and show the line big; the next tap closes it. */
-  private openReader() {
-    const shown = this.popups.current;
-    if (!shown || this.reader) return;
+  /** Touch: freeze the game and show a story moment big, one row per line; a tap (after a beat) carries on. */
+  private openStory(lines: Shown[]) {
+    if (this.story) return;
     this.freeze(true);
-    const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.82).setOrigin(0);
-    const portrait = this.add.sprite(100, 60, shown.speaker.key, shown.frame).setOrigin(0).setScale(3).setCrop(0, 0, 64, 56);
-    const don = shown.speaker.name === 'BIG DON';
-    const banner = text(this, 304, 90, don ? '● INCOMING - BIG DON' : `● GUEST FEATURE - ${shown.speaker.name}`, 12, don ? COLORS.red : COLORS.gold, 0).setOrigin(0, 0.5);
-    const line = text(this, 100, 250, shown.text, 16, COLORS.text, 0).setOrigin(0).setAlign('left').setWordWrapWidth(760).setLineSpacing(10);
-    const hint = text(this, WIDTH / 2, HEIGHT - 40, 'TAP TO GET BACK TO IT', 12, COLORS.gold);
+    this.lastStory = lines[0];
+    const left = OX + 60;
+    const items: Phaser.GameObjects.GameObject[] = [this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.88).setOrigin(0)];
+    lines.forEach((l, i) => {
+      const y = 48 + i * 200;
+      const don = l.speaker === DON;
+      items.push(
+        this.add.sprite(left, y, l.speaker.key, l.frame).setOrigin(0).setScale(2).setCrop(0, 0, 64, 56),
+        text(this, left + 152, y + 14, don ? '● BIG DON' : `● GUEST FEATURE - ${l.speaker.name}`, 12, don ? COLORS.red : COLORS.gold, 0).setOrigin(0, 0.5),
+        text(this, left + 152, y + 36, l.text, 14, COLORS.text, 0).setOrigin(0).setAlign('left').setWordWrapWidth(WIDTH - 2 * left - 152).setLineSpacing(8),
+      );
+    });
+    const hint = text(this, WIDTH / 2, HEIGHT - 36, 'TAP TO GET BACK TO IT', 12, COLORS.gold);
     this.tweens.add({ targets: hint, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-    this.reader = this.add.container(0, 0, [bg, portrait, banner, line, hint]).setDepth(DEPTH.popup + 20);
-    this.input.once('pointerdown', () => this.closeReader());
+    items.push(hint);
+    this.story = this.add.container(0, 0, items).setDepth(DEPTH.popup + 20);
+    Audio.play('incoming');
+    const bleeps = lines.reduce((n, l) => n + (l.text.match(/\*+/g) ?? []).length, 0);
+    for (let k = 0; k < bleeps; k++) setTimeout(() => Audio.play('bleep', { volume: 0.6 }), 300 + k * 260);
+    // The game clock is frozen, so time the tap guard on the wall clock: a finger that was already
+    // firing when the story landed shouldn't dismiss it.
+    const openedAt = performance.now();
+    const onTap = () => {
+      if (performance.now() - openedAt < 600) return;
+      this.input.off('pointerdown', onTap);
+      this.closeStory();
+    };
+    this.input.on('pointerdown', onTap);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.input.off('pointerdown', onTap));
   }
 
-  private closeReader() {
-    if (!this.reader) return;
-    this.tweens.killTweensOf(this.reader.list);
-    this.reader.destroy();
-    this.reader = null;
+  private closeStory() {
+    if (!this.story) return;
+    this.tweens.killTweensOf(this.story.list);
+    this.story.destroy();
+    this.story = null;
     this.freeze(false);
-    // drop a pause tap that landed while the reader was up
+    // drop a pause tap that landed while the story was up
     this.controls.pause();
   }
 
@@ -564,13 +608,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, deltaMs: number) {
-    if (this.reader) return;
+    if (this.story) return;
     if (this.controls.pause() && this.phase !== 'over') this.togglePause();
     if (this.paused) return;
-    if (this.controls.read() && this.popups.current) {
-      this.openReader();
-      return;
-    }
     const dtMs = Math.min(deltaMs, 50);
     const dt = dtMs / 1000;
     // LAID BACK: hostile movement, fire and spawns run on a slower clock
@@ -661,7 +701,6 @@ export class GameScene extends Phaser.Scene {
       this.fx.adlib(p.x, p.y - 34, 'DISS READY');
     }
     this.dissWasReady = dissReady >= 1;
-    if (TOUCH) this.popups.setGhost(!!this.popups.current && this.cardCovers());
     this.hud.update({
       hp: p.hp,
       lives: this.run.lives,
@@ -674,18 +713,6 @@ export class GameScene extends Phaser.Scene {
     this.controls.update({ dissReady });
     this.popups.update(dtMs);
     this.ticker.update(dtMs);
-  }
-
-  /** Touch: is anything worth seeing (an opp, incoming fire, the ship) behind the dialogue card? */
-  private cardCovers(): boolean {
-    const r = this.popups.bounds();
-    Phaser.Geom.Rectangle.Inflate(r, 24, 24);
-    const inside = (o: { x: number; y: number }) => Phaser.Geom.Rectangle.Contains(r, o.x, o.y);
-    if (inside(this.player)) return true;
-    for (const e of this.enemies) if (!e.dead && e.active && inside(e)) return true;
-    for (const e of this.hostiles) if (!e.dead && e.active && inside(e)) return true;
-    // a shell's danger is where it lands: the reticle on the water
-    return this.shells.some((s) => !s.done && inside({ x: s.tx, y: s.ty }));
   }
 
   private collide() {

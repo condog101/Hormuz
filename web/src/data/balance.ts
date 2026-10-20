@@ -1,7 +1,28 @@
 // Tunable numbers that aren't per-level. Per-level difficulty lives in levels.ts.
 
-export const WIDTH = 960;
+import { TOUCH } from '../systems/Device';
+
 export const HEIGHT = 540;
+
+/**
+ * Canvas width. Desktop is 960x540 (16:9). Phones are wider than 16:9, so on touch the canvas
+ * widens to the screen's landscape aspect (inside the safe area) instead of letterboxing.
+ */
+function gameWidth(): number {
+  if (!TOUCH || typeof document === 'undefined') return 960;
+  const el = document.getElementById('game');
+  if (!el) return 960;
+  const w = el.clientWidth;
+  const h = el.clientHeight;
+  if (!(w > 0 && h > 0)) return 960;
+  // Long side over short side: a phone held in portrait at load still sizes for landscape play.
+  const aspect = Math.max(w, h) / Math.min(w, h);
+  return Math.min(1280, Math.max(960, Math.round((HEIGHT * aspect) / 2) * 2));
+}
+
+export const WIDTH = gameWidth();
+/** How far a 960-wide layout shifts right to sit centred on the canvas. */
+export const OX = (WIDTH - 960) / 2;
 /** Every sprite is drawn at this integer scale. */
 export const PX = 2;
 export const TILE = 16 * PX;

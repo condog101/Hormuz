@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { getLevel } from '../data/levels';
 import { TWEETS } from '../data/story';
 import { byInput } from '../systems/Device';
@@ -21,7 +21,7 @@ export class LevelIntroScene extends Phaser.Scene {
     }
     const L = getLevel(run.level);
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.5);
-    panel(this, 120, 90, 720, 360);
+    panel(this, OX + 120, 90, 720, 360);
     text(this, WIDTH / 2, 130, run.level > 10 ? 'HIDDEN TRACK' : `TRACK ${L.n} OF 10`, 8, COLORS.dim);
     text(this, WIDTH / 2, 164, L.name, 24, COLORS.gold);
     text(this, WIDTH / 2, 220, L.brief, 8, COLORS.text).setWordWrapWidth(620);

@@ -15,7 +15,8 @@ type View = 'main' | 'levels' | 'settings' | 'credits';
 const WATER_Y = 238;
 const WATER_H = 176;
 const SHIP_Y = WATER_Y + WATER_H / 2 + 20;
-const MENU_X = 690;
+/** Menu and controls hint keep their distance from the right edge on a wide (phone) canvas. */
+const MENU_X = WIDTH - 270;
 
 export class TitleScene extends Phaser.Scene {
   private layer!: Phaser.GameObjects.Container;
@@ -83,7 +84,7 @@ export class TitleScene extends Phaser.Scene {
       this.layer.add(
         text(
           this,
-          600,
+          WIDTH - 360,
           450,
           byInput(
             'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK  E/RIGHT CLICK DISS TRACKS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON',

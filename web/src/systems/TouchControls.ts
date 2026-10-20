@@ -12,7 +12,7 @@ const PAD_REACH = 130;
 /** Touches nearer the centre than this hold the ship still. */
 const PAD_DEAD = 14;
 const BTN = 80;
-const BTN_X = 908;
+const BTN_X = WIDTH - 52;
 /** Extra px around each button that still counts as a hit. */
 const SLOP = 8;
 const DEPTH_TOUCH = DEPTH.hud + 20;
@@ -41,8 +41,6 @@ export class TouchControls {
   private gunTapped = false;
   private pauseTapped = false;
   private dissTapped = false;
-  private readTapped = false;
-  private overlayHit: ((x: number, y: number) => boolean) | null = null;
 
   /** Arrow triangles in right, down, left, up order. */
   private arrows: Phaser.GameObjects.Triangle[] = [];
@@ -142,8 +140,6 @@ export class TouchControls {
         this.padId = p.id;
         this.steer(p);
       }
-    } else if (this.overlayHit?.(x, y)) {
-      this.readTapped = true;
     } else if (this.aimId === null) {
       this.aimId = p.id;
       this.aimAt(p);
@@ -225,16 +221,6 @@ export class TouchControls {
     return t;
   }
 
-  takeRead(): boolean {
-    const t = this.readTapped;
-    this.readTapped = false;
-    return t;
-  }
-
-  setOverlayHit(fn: (x: number, y: number) => boolean) {
-    this.overlayHit = fn;
-  }
-
   takeWeaponCycle(): boolean {
     const t = this.gunTapped;
     this.gunTapped = false;
@@ -254,7 +240,6 @@ export class TouchControls {
       this.releaseAll();
       this.gunTapped = false;
       this.dissTapped = false;
-      this.readTapped = false;
     }
   }
 

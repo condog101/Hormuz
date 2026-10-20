@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH, PLAYER } from '../data/balance';
+import { DEPTH, PLAYER, WIDTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 import { Audio } from '../systems/Audio';
 import { rand } from '../systems/Random';
@@ -25,7 +25,7 @@ export class Artillery extends Entity {
     const g = this.game_;
     if (this.dead) {
       this.smokeTimer -= dt;
-      if (this.smokeTimer <= 0 && this.x > 0 && this.x < 960) {
+      if (this.smokeTimer <= 0 && this.x > 0 && this.x < WIDTH) {
         this.smokeTimer = 0.5;
         g.fx.smoke(this.x + rand(-6, 6), this.y - 6);
       }

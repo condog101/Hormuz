@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { DEPTH, DISS, PLAYER, WEAPONS, type WeaponKey } from '../data/balance';
+import { DEPTH, DISS, PLAYER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import type { LevelDef } from '../data/levels';
 import { COLORS, panel, text } from './UI';
 
@@ -67,7 +67,7 @@ export class HUD {
     this.buffFill = s.add.rectangle(131, 12, 158, 6, 0xffd84a).setOrigin(0, 0.5);
     this.buffBar.add(this.buffFill);
     // boss bar (hidden until the boss arrives)
-    this.bossBar = s.add.container(480, 492).setVisible(false).setDepth(DEPTH.hud);
+    this.bossBar = s.add.container(WIDTH / 2, 492).setVisible(false).setDepth(DEPTH.hud);
     this.bossBar.add(text(s, 0, -14, level.bossName ?? "THE AYATOLLAH'S MOTHERSHIP", 8, COLORS.red));
     this.bossBar.add(s.add.rectangle(0, 0, 404, 12, 0x000000).setStrokeStyle(1, 0xff4a4a));
     this.bossFill = s.add.rectangle(-200, 0, 400, 8, 0xff4a4a).setOrigin(0, 0.5);

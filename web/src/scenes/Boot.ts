@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { WIDTH } from '../data/balance';
 import { Audio } from '../systems/Audio';
 import { Save } from '../systems/Save';
 import { syncProgress } from '../net/sync';
@@ -42,10 +43,10 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    const bar = this.add.rectangle(480, 290, 0, 8, 0xffd84a).setOrigin(0, 0.5);
-    this.add.rectangle(480, 290, 304, 12).setStrokeStyle(2, 0xb88c1e);
-    bar.x = 480 - 150;
-    text(this, 480, 250, 'LOADING', 16, COLORS.text);
+    const cx = WIDTH / 2;
+    const bar = this.add.rectangle(cx - 150, 290, 0, 8, 0xffd84a).setOrigin(0, 0.5);
+    this.add.rectangle(cx, 290, 304, 12).setStrokeStyle(2, 0xb88c1e);
+    text(this, cx, 250, 'LOADING', 16, COLORS.text);
     this.load.on('progress', (v: number) => (bar.width = 300 * v));
     // Sprite URLs don't change between builds, so stamp them with the build id to bust caches.
     const v = `?v=${import.meta.env.VITE_BUILD_ID ?? ''}`;

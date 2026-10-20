@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { HEIGHT, OX, PX, WIDTH } from '../data/balance';
 import { pickQuote, renderLine } from '../data/quotes';
 import { submitRun, syncProgress } from '../net/sync';
 import { Audio } from '../systems/Audio';
@@ -22,7 +22,7 @@ export class GameOverScene extends Phaser.Scene {
     void syncProgress();
 
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
-    panel(this, 160, 60, 640, 420);
+    panel(this, OX + 160, 60, 640, 420);
     text(this, WIDTH / 2, 100, victory ? 'CERTIFIED PLATINUM' : 'FELL OFF', 32, victory ? COLORS.gold : COLORS.red);
     if (victory) {
       text(this, WIDTH / 2, 140, 'YOU RAN THE STRAIT. PAC IS (ALLEGEDLY) ON THE BOAT.', 8, COLORS.green);
@@ -41,12 +41,12 @@ export class GameOverScene extends Phaser.Scene {
       8,
     );
 
-    const portrait = this.add.sprite(196, 244, 'potus', 0).setOrigin(0).setScale(1.5).setCrop(0, 0, 64, 56);
+    const portrait = this.add.sprite(OX + 196, 244, 'potus', 0).setOrigin(0).setScale(1.5).setCrop(0, 0, 64, 56);
     const line = renderLine(pickQuote(victory ? 'victory' : 'death', []).text);
-    text(this, 312, 252, `"${line}"`, 8, COLORS.text, 0).setOrigin(0, 0).setAlign('left').setWordWrapWidth(450);
+    text(this, OX + 312, 252, `"${line}"`, 8, COLORS.text, 0).setOrigin(0, 0).setAlign('left').setWordWrapWidth(450);
     this.time.addEvent({ delay: 110, repeat: 30, callback: () => portrait.setFrame(Phaser.Math.Between(0, 2)) });
     this.time.delayedCall(3600, () => portrait.setFrame(victory ? 4 : 0));
-    this.add.image(172, 468, 'advisory').setOrigin(0, 1).setScale(1.5);
+    this.add.image(OX + 172, 468, 'advisory').setOrigin(0, 1).setScale(1.5);
 
     const status = text(this, WIDTH / 2, 380, Save.session ? 'SENDING IT TO THE CHARTS...' : 'SIGN TO THE LABEL TO POST SCORES TO THE CHARTS', 8, COLORS.dim);
     if (Save.session) {
@@ -60,7 +60,15 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     menu(this, WIDTH / 2, 420, [
-      { label: 'RUN IT BACK', action: () => this.scene.start('LevelIntro', { run: newRun(run.mode, run.startLevel) }) },
+      // Campaign retries the track you fell off (no tweet deck again); hidden tracks start over from H1.
+      {
+        label: 'RUN IT BACK',
+        action: () =>
+          this.scene.start('LevelIntro', {
+            run: newRun(run.mode, run.mode === 'campaign' ? run.level : run.startLevel),
+            briefed: true,
+          }),
+      },
       { label: 'BACK TO THE STUDIO', action: () => this.scene.start('Title') },
     ], 26);
     this.cameras.main.fadeIn(300);

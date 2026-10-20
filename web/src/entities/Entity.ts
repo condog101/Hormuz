@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { KillKind } from '../../../shared/scoring';
-import { PX } from '../data/balance';
+import { HEIGHT, PX, WIDTH } from '../data/balance';
 import type { GameScene } from '../scenes/Game';
 
 /** Base for everything in the world that can be hit or updated. */
@@ -57,6 +57,6 @@ export abstract class Entity extends Phaser.GameObjects.Sprite {
   }
 
   offscreen(margin = 80): boolean {
-    return this.x < -margin || this.x > 960 + margin * 3 || this.y < -margin * 2 || this.y > 540 + margin * 2;
+    return this.x < -margin || this.x > WIDTH + margin * 3 || this.y < -margin * 2 || this.y > HEIGHT + margin * 2;
   }
 }
