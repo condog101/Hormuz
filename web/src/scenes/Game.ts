@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import { KILL_POINTS, levelClearBonus } from '../../../shared/scoring';
-import { CIWS, DAMAGE, DEPTH, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
+import { CIWS, DAMAGE, DEPTH, DISS, HEIGHT, PICKUP_HEAL, PLAYER, WEAPON_ORDER, WEAPONS, WIDTH, type WeaponKey } from '../data/balance';
 import { getLevel, type LevelDef } from '../data/levels';
 import { ADLIBS, GUESTS, type GuestKey } from '../data/quotes';
+import { BEATS, type Beat } from '../data/story';
 import { Boss } from '../entities/Boss';
+import { DissMissile } from '../entities/DissMissile';
 import type { Entity } from '../entities/Entity';
 import { MicPickup } from '../entities/MicPickup';
 import { Missile } from '../entities/Missile';
@@ -20,7 +22,7 @@ import { TOUCH } from '../systems/Device';
 import { Fx } from '../systems/Fx';
 import { HUD } from '../systems/HUD';
 import { Music } from '../systems/Music';
-import { Popups } from '../systems/Popups';
+import { Popups, type Speaker } from '../systems/Popups';
 import type { RunState } from '../systems/Run';
 import { Spawner } from '../systems/Spawner';
 import { COLORS, menu, text } from '../systems/UI';
@@ -53,6 +55,7 @@ export class GameScene extends Phaser.Scene {
   private enemies: Entity[] = [];
   private hostiles: Entity[] = [];
   private rounds: Round[] = [];
+  private disses: DissMissile[] = [];
   private pickups: (Pickup | MicPickup)[] = [];
   private shells: Shell[] = [];
   private mortars: Mortar[] = [];
@@ -61,6 +64,7 @@ export class GameScene extends Phaser.Scene {
   private length = 0;
   private phase: Phase = 'transit';
   private ciwsReadyAt = 0;
+  private dissReadyAt = 0;
   private levelStartScore = 0;
   private tookDamage = false;
   private paused = false;
@@ -79,6 +83,10 @@ export class GameScene extends Phaser.Scene {
   private buffStart = 0;
   private buffUntil = 0;
   private feat: string | undefined;
+  /** Story beats for this track that haven't fired yet. */
+  private beats: Beat[] = [];
+  /** Touch: the full-screen dialogue reader, open while the game is frozen. */
+  private reader: Phaser.GameObjects.Container | null = null;
 
   constructor() {
     super('Game');
@@ -90,6 +98,7 @@ export class GameScene extends Phaser.Scene {
     this.enemies = [];
     this.hostiles = [];
     this.rounds = [];
+    this.disses = [];
     this.pickups = [];
     this.shells = [];
     this.mortars = [];
@@ -98,6 +107,7 @@ export class GameScene extends Phaser.Scene {
     this.distance = 0;
     this.phase = 'transit';
     this.ciwsReadyAt = 0;
+    this.dissReadyAt = 0;
     this.tookDamage = false;
     this.paused = false;
     this.pauseUi = null;
@@ -108,6 +118,8 @@ export class GameScene extends Phaser.Scene {
     this.buff = null;
     this.buffUntil = 0;
     this.feat = undefined;
+    this.beats = this.run.mode === 'campaign' ? BEATS.filter((b) => b.level === this.run.level) : [];
+    this.reader = null;
     this.levelStartScore = this.run.score;
   }
 
@@ -133,6 +145,7 @@ export class GameScene extends Phaser.Scene {
       this.controls.destroy();
     });
     this.popups = new Popups(this);
+    this.controls.setOverlayHit((x, y) => this.popups.hitTest(x, y));
     this.spawner = new Spawner(this, this.level);
     this.time.delayedCall(1200, () => this.popups.trigger('start', true));
     Music.play('game');
@@ -148,6 +161,19 @@ export class GameScene extends Phaser.Scene {
   /** Shore guns and launchers hold fire once the ship is clear of the strait. */
   get hostilesActive(): boolean {
     return this.phase === 'transit' || this.phase === 'boss';
+  }
+
+  /** Up to `n` live shootable enemies within `range` of (x, y), nearest first. */
+  nearestEnemies(x: number, y: number, n: number, range: number): Entity[] {
+    return this.enemies
+      .filter((e) => !e.dead && e.active && e.shootable && e.kind && Math.hypot(e.x - x, e.y - y) < range)
+      .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
+      .slice(0, n);
+  }
+
+  /** LAID BACK slows everything hostile to half speed. */
+  private get hostileScale(): number {
+    return this.buff === 'snoop' ? 0.5 : 1;
   }
 
   addEnemy(e: Entity) {
@@ -248,7 +274,7 @@ export class GameScene extends Phaser.Scene {
     this.fx.floatText(x, y - 10, `+${points}`);
   }
 
-  /** Golden mic collected: the other guest from last time drops a verse and a buff. */
+  /** Golden mic collected: somebody other than last time drops a verse and a buff, then Big Don answers them. */
   private startGuest() {
     const p = this.player;
     const now = this.time.now;
@@ -259,9 +285,8 @@ export class GameScene extends Phaser.Scene {
     this.feat = guest.name;
     this.endBuff();
     Audio.play('clear');
-    this.popups.say({ name: guest.name, key: 'guests', rest: guest.frame, talk: guest.frame + 1 }, Phaser.Utils.Array.GetRandom(guest.lines), () =>
-      this.time.delayedCall(6000, () => this.popups.trigger('guest', true)),
-    );
+    const ex = Phaser.Utils.Array.GetRandom(guest.exchanges);
+    this.popups.say(this.guestSpeaker(k), ex.guest, ex.don);
     this.fx.adlib(p.x, p.y - 40, `FEAT. ${guest.name}`);
     this.buff = k;
     this.buffStart = now;
@@ -271,6 +296,17 @@ export class GameScene extends Phaser.Scene {
       p.invulnUntil = Math.max(p.invulnUntil, this.buffUntil);
       p.fireMult = 0.5;
       p.buffTint = 0x9fe3ff;
+    } else if (k === 'snoop') {
+      // LAID BACK: everything hostile at half speed (see hostileScale)
+      this.buffUntil = now + 8000;
+      p.buffTint = 0xc99bff;
+    } else if (k === 'dre') {
+      // THE DOCTOR: +30 hull now, then +3 hull a second
+      this.buffUntil = now + 10000;
+      p.hp = Math.min(PLAYER.hp, p.hp + 30);
+      p.updateFrame();
+      p.buffTint = 0x9dffb4;
+      this.fx.floatText(p.x, p.y - 20, '+30 HULL', COLORS.green);
     } else {
       // DOUBLE UP: +40 hull, double kill points, an ad-lib on every kill
       this.buffUntil = now + 10000;
@@ -280,12 +316,25 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private guestSpeaker(k: GuestKey): Speaker {
+    const g = GUESTS[k];
+    return { name: g.name, key: 'guests', rest: g.frame, talk: g.frame + 1 };
+  }
+
+  /** A story beat: a guest calls in, Big Don answers five seconds after they finish. */
+  private playBeat(b: Beat) {
+    this.beats = this.beats.filter((x) => x !== b);
+    this.popups.say(this.guestSpeaker(b.guest), b.line, b.don, 5000);
+  }
+
   private endBuff() {
     if (!this.buff) return;
     const p = this.player;
     if (this.buff === 'cube') {
       p.invulnUntil = Math.min(p.invulnUntil, this.time.now);
       p.fireMult = 1;
+    }
+    if (p.buffTint !== null) {
       p.buffTint = null;
       p.clearTint();
       p.turret.clearTint();
@@ -402,6 +451,34 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  /** DISS TRACKS: lock the nearest opps and send a guided missile at each. Charge is kept if nothing is in range. */
+  private fireDiss() {
+    const now = this.time.now;
+    const p = this.player;
+    if (now < this.dissReadyAt || p.sinking) return;
+    const targets = this.nearestEnemies(p.x, p.y, DISS.count, DISS.range);
+    if (targets.length === 0) {
+      this.fx.floatText(p.x, p.y - 30, 'NO OPPS IN RANGE', COLORS.dim);
+      Audio.play('select');
+      return;
+    }
+    this.dissReadyAt = now + DISS.rechargeMs;
+    this.fx.adlib(p.x, p.y - 34, 'DISS!');
+    for (let i = 0; i < DISS.count; i++) {
+      const t = targets[i % targets.length];
+      this.time.delayedCall(i * DISS.launchGapMs, () => {
+        if (p.sinking || this.phase === 'over') return;
+        const a = -Math.PI / 2 + (i - 1) * 0.5;
+        this.disses.push(new DissMissile(this, p.x - 10 + i * 10, p.y - 6, a, t.dead ? null : t));
+        Audio.play('launch', { pitch: 1.2 + i * 0.1, minGapMs: 40 });
+      });
+    }
+    if (!this.run.usedDiss) {
+      this.run.usedDiss = true;
+      this.popups.interrupt('diss');
+    } else if (Math.random() < 0.2) this.popups.trigger('diss');
+  }
+
   private levelClear() {
     if (this.phase === 'clear' || this.phase === 'over') return;
     this.phase = 'clear';
@@ -428,21 +505,40 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private togglePause() {
-    this.paused = !this.paused;
-    if (this.paused) {
+  /** Stop (or restart) the world: tweens, animations, timers, music level and the touch controls. */
+  private freeze(on: boolean) {
+    if (on) {
       this.tweens.pauseAll();
       this.anims.pauseAll();
       this.time.paused = true;
-      Music.duck(true);
+    } else {
+      this.tweens.resumeAll();
+      this.anims.resumeAll();
+      this.time.paused = false;
+    }
+    Music.duck(on);
+    this.controls.setEnabled(!on);
+    this.popups.setHidden(on);
+  }
+
+  private togglePause() {
+    this.paused = !this.paused;
+    if (this.paused) {
+      this.freeze(true);
       const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.6).setOrigin(0);
-      const t = text(this, WIDTH / 2, HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
+      const last = this.popups.lastLine;
+      const t = text(this, WIDTH / 2, last ? 150 : HEIGHT / 2 - 20, 'HOLD UP', 24, COLORS.gold);
       this.pauseUi = this.add.container(0, 0, [bg, t]).setDepth(DEPTH.popup + 10);
+      if (last) {
+        this.pauseUi.add(text(this, WIDTH / 2, 196, `LAST FROM ${last.speaker.name}`, 8, COLORS.red));
+        this.pauseUi.add(text(this, WIDTH / 2, 214, last.text, TOUCH ? 12 : 8, COLORS.text).setOrigin(0.5, 0).setWordWrapWidth(700));
+      }
+      const y = last ? 330 : HEIGHT / 2 + 24;
       if (TOUCH) {
         this.pauseMenu = menu(
           this,
           WIDTH / 2,
-          HEIGHT / 2 + 34,
+          y + 10,
           [
             { label: 'RESUME', action: () => this.paused && this.togglePause() },
             { label: 'BACK TO THE STUDIO', action: () => this.quitToTitle() },
@@ -451,21 +547,42 @@ export class GameScene extends Phaser.Scene {
           DEPTH.popup + 11,
         );
       } else {
-        this.pauseUi.add(text(this, WIDTH / 2, HEIGHT / 2 + 24, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim));
+        this.pauseUi.add(text(this, WIDTH / 2, y, 'ESC RESUME   Q BACK TO THE STUDIO', 8, COLORS.dim));
       }
-      this.controls.setEnabled(false);
       this.input.keyboard!.once('keydown-Q', () => this.quitToTitle());
     } else {
-      this.tweens.resumeAll();
-      this.anims.resumeAll();
-      this.time.paused = false;
-      Music.duck(false);
+      this.freeze(false);
       this.pauseUi?.destroy();
       this.pauseUi = null;
       this.pauseMenu?.destroy();
       this.pauseMenu = null;
-      this.controls.setEnabled(true);
     }
+  }
+
+  /** Touch: the dialogue card was tapped. Freeze the game and show the line big; the next tap closes it. */
+  private openReader() {
+    const shown = this.popups.current;
+    if (!shown || this.reader) return;
+    this.freeze(true);
+    const bg = this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.82).setOrigin(0);
+    const portrait = this.add.sprite(100, 60, shown.speaker.key, shown.frame).setOrigin(0).setScale(3).setCrop(0, 0, 64, 56);
+    const don = shown.speaker.name === 'BIG DON';
+    const banner = text(this, 304, 90, don ? '● INCOMING - BIG DON' : `● GUEST FEATURE - ${shown.speaker.name}`, 12, don ? COLORS.red : COLORS.gold, 0).setOrigin(0, 0.5);
+    const line = text(this, 100, 250, shown.text, 16, COLORS.text, 0).setOrigin(0).setAlign('left').setWordWrapWidth(760).setLineSpacing(10);
+    const hint = text(this, WIDTH / 2, HEIGHT - 40, 'TAP TO GET BACK TO IT', 12, COLORS.gold);
+    this.tweens.add({ targets: hint, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    this.reader = this.add.container(0, 0, [bg, portrait, banner, line, hint]).setDepth(DEPTH.popup + 20);
+    this.input.once('pointerdown', () => this.closeReader());
+  }
+
+  private closeReader() {
+    if (!this.reader) return;
+    this.tweens.killTweensOf(this.reader.list);
+    this.reader.destroy();
+    this.reader = null;
+    this.freeze(false);
+    // drop a pause tap that landed while the reader was up
+    this.controls.pause();
   }
 
   private quitToTitle() {
@@ -475,10 +592,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, deltaMs: number) {
+    if (this.reader) return;
     if (this.controls.pause() && this.phase !== 'over') this.togglePause();
     if (this.paused) return;
+    if (this.controls.read() && this.popups.current) {
+      this.openReader();
+      return;
+    }
     const dtMs = Math.min(deltaMs, 50);
     const dt = dtMs / 1000;
+    // LAID BACK: hostile movement, fire and spawns run on a slower clock
+    const hdt = dt * this.hostileScale;
     if (this.phase !== 'over') this.run.playMs += dtMs;
 
     // world scroll
@@ -486,7 +610,13 @@ export class GameScene extends Phaser.Scene {
     this.distance += dx;
     this.coast.update(dx, dtMs);
     this.fx.update(dx);
-    this.spawner.update(dtMs, this.distance);
+    this.spawner.update(dtMs * this.hostileScale, this.distance);
+    for (const b of this.beats) {
+      if (b.at !== 'boss' && this.phase === 'transit' && this.distance >= b.at * this.length) {
+        this.playBeat(b);
+        break;
+      }
+    }
 
     if (this.phase === 'transit' && this.distance >= this.length) {
       this.spawner.active = false;
@@ -494,7 +624,9 @@ export class GameScene extends Phaser.Scene {
         this.phase = 'boss';
         this.boss = new Boss(this, this.level.n >= 10 ? 2 : 1);
         this.addEnemy(this.boss);
-        this.popups.trigger('bossIntro', true);
+        const beat = this.beats.find((b) => b.at === 'boss');
+        if (beat) this.playBeat(beat);
+        else this.popups.trigger('bossIntro', true);
         Music.play('boss');
       } else {
         this.levelClear();
@@ -516,23 +648,25 @@ export class GameScene extends Phaser.Scene {
       const weapon = this.run.weapon;
       if (this.controls.firing() && p.canFire(this.time.now, WEAPONS[weapon].cooldownMs)) this.fire(weapon);
       if (this.controls.ciws()) this.ciws();
+      if (this.controls.diss()) this.fireDiss();
     }
 
     // entities
-    for (const s of this.shells) s.step(dt, dx);
+    for (const s of this.shells) s.step(hdt, dx);
     this.shells = this.shells.filter((s) => !s.done);
     for (const m of this.mortars) m.step(dt, dx);
     this.mortars = this.mortars.filter((m) => !m.done);
-    const stepAll = <T extends Entity>(list: T[]) => {
+    const stepAll = <T extends Entity>(list: T[], stepDt = dt) => {
       for (const e of list) {
         if (!e.active) continue;
         if (e.scrolls) e.x -= dx;
-        e.step(dt);
+        e.step(stepDt);
       }
       return list.filter((e) => e.active);
     };
-    this.enemies = stepAll(this.enemies);
-    this.hostiles = stepAll(this.hostiles);
+    this.enemies = stepAll(this.enemies, hdt);
+    this.hostiles = stepAll(this.hostiles, hdt);
+    this.disses = stepAll(this.disses);
     this.pickups = stepAll(this.pickups);
     this.rounds = stepAll(this.rounds);
 
@@ -541,19 +675,27 @@ export class GameScene extends Phaser.Scene {
     if (this.buff) {
       const frac = (this.buffUntil - this.time.now) / (this.buffUntil - this.buffStart);
       if (frac <= 0) this.endBuff();
-      else this.hud.setBuff(GUESTS[this.buff].buff, frac);
+      else {
+        this.hud.setBuff(GUESTS[this.buff].buff, frac);
+        if (this.buff === 'dre' && !p.sinking) {
+          p.hp = Math.min(PLAYER.hp, p.hp + 3 * dt);
+          p.updateFrame();
+        }
+      }
     }
 
+    const dissReady = HUD.dissFraction(this.time.now, this.dissReadyAt);
     this.hud.update({
       hp: p.hp,
       lives: this.run.lives,
       score: this.run.score,
       progress: this.distance / this.length,
       ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt),
+      dissReady,
       reload: p.reloadFraction(this.time.now),
       boss: this.boss && !this.boss.dead ? { hp: this.boss.hp, max: this.boss.maxHp } : undefined,
     });
-    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt) });
+    this.controls.update({ ciwsReady: HUD.ciwsFraction(this.time.now, this.ciwsReadyAt), dissReady });
     this.popups.update(dtMs);
   }
 

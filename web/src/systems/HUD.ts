@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CIWS, DEPTH, PLAYER, WEAPONS, type WeaponKey } from '../data/balance';
+import { CIWS, DEPTH, DISS, PLAYER, WEAPONS, type WeaponKey } from '../data/balance';
 import type { LevelDef } from '../data/levels';
 import { COLORS, panel, text } from './UI';
 
@@ -11,6 +11,8 @@ export class HUD {
   private progress: Phaser.GameObjects.Rectangle;
   private ciws: Phaser.GameObjects.Rectangle;
   private ciwsIcon: Phaser.GameObjects.Image;
+  private diss: Phaser.GameObjects.Rectangle;
+  private dissIcon: Phaser.GameObjects.Image;
   private bossBar: Phaser.GameObjects.Container;
   private bossFill: Phaser.GameObjects.Rectangle;
   private weaponIcon: Phaser.GameObjects.Image;
@@ -24,7 +26,7 @@ export class HUD {
   constructor(scene: Phaser.Scene, level: LevelDef) {
     const s = scene;
     this.root = s.add.container(0, 0).setDepth(DEPTH.hud);
-    const W = 300;
+    const W = 360;
     this.root.add(panel(s, 8, 8, W, 72));
     this.root.add(text(s, 20, 22, `${level.n > 10 ? `H${level.n - 10}` : `T${level.n}`} ${level.name}`, 8, COLORS.gold, 0).setOrigin(0, 0.5));
     // hull
@@ -44,6 +46,12 @@ export class HUD {
     this.root.add(s.add.rectangle(270, 42, 28, 6, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, 0x5a6d8c));
     this.ciws = s.add.rectangle(271, 42, 26, 4, 0x4ad8ff).setOrigin(0, 0.5);
     this.root.add(this.ciws);
+    // DISS TRACKS
+    this.dissIcon = s.add.image(312, 42, 'hud_icons', 9);
+    this.root.add(this.dissIcon);
+    this.root.add(s.add.rectangle(324, 42, 28, 6, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, 0x5a6d8c));
+    this.diss = s.add.rectangle(325, 42, 26, 4, 0xffd84a).setOrigin(0, 0.5);
+    this.root.add(this.diss);
     // score + progress
     this.score = text(s, 20, 62, '0', 8, COLORS.text, 0).setOrigin(0, 0.5);
     this.root.add(this.score);
@@ -68,7 +76,7 @@ export class HUD {
     this.buffBar.add(this.buffFill);
     // boss bar (hidden until the boss arrives)
     this.bossBar = s.add.container(480, 524).setVisible(false).setDepth(DEPTH.hud);
-    this.bossBar.add(text(s, 0, -14, "THE AYATOLLAH'S MOTHERSHIP", 8, COLORS.red));
+    this.bossBar.add(text(s, 0, -14, level.bossName ?? "THE AYATOLLAH'S MOTHERSHIP", 8, COLORS.red));
     this.bossBar.add(s.add.rectangle(0, 0, 404, 12, 0x000000).setStrokeStyle(1, 0xff4a4a));
     this.bossFill = s.add.rectangle(-200, 0, 400, 8, 0xff4a4a).setOrigin(0, 0.5);
     this.bossBar.add(this.bossFill);
@@ -85,6 +93,7 @@ export class HUD {
     score: number;
     progress: number;
     ciwsReady: number;
+    dissReady: number;
     reload: number;
     boss?: { hp: number; max: number };
   }) {
@@ -99,6 +108,8 @@ export class HUD {
     this.reload.width = 64 * Phaser.Math.Clamp(state.reload, 0, 1);
     this.ciws.width = 26 * Phaser.Math.Clamp(state.ciwsReady, 0, 1);
     this.ciwsIcon.setAlpha(state.ciwsReady >= 1 ? 1 : 0.4);
+    this.diss.width = 26 * Phaser.Math.Clamp(state.dissReady, 0, 1);
+    this.dissIcon.setAlpha(state.dissReady >= 1 ? 1 : 0.4);
     if (state.boss) {
       this.bossBar.setVisible(true);
       this.bossFill.width = 400 * Phaser.Math.Clamp(state.boss.hp / state.boss.max, 0, 1);
@@ -118,5 +129,9 @@ export class HUD {
 
   static ciwsFraction(now: number, readyAt: number) {
     return 1 - Math.max(0, readyAt - now) / CIWS.cooldownMs;
+  }
+
+  static dissFraction(now: number, readyAt: number) {
+    return 1 - Math.max(0, readyAt - now) / DISS.rechargeMs;
   }
 }

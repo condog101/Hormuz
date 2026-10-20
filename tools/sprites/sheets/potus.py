@@ -2,7 +2,7 @@
 
 Orange tan, pale goggle-tan around the eyes, enormous swept golden hair, dark
 suit and an extra-long red tie, now with a red bandana, two gold rope chains
-with a $ medallion, a gold grill and a studio backdrop (foam wall, mic, ON AIR).
+with a $ medallion, a big white grin and a studio backdrop (foam wall, mic, ON AIR).
 Big Don always wears his shades.
 Frames: 0 mouth closed, 1 half open, 2 wide open, 3 blink (hidden by the shades), 4 grin.
 """
@@ -158,10 +158,10 @@ def shades(img):
     rect(img, 44, 27, 47, 27, C["black"])
 
 
-def grill(img, x0, x1, y):
-    """Gold teeth with darker separators."""
+def teeth(img, x0, x1, y):
+    """White teeth with grey separators."""
     for x in range(x0, x1 + 1):
-        px(img, x, y, C["gold"] if (x - x0) % 2 == 0 else C["gold_dk"])
+        px(img, x, y, C["white"] if (x - x0) % 2 == 0 else C["hull_lt"])
 
 
 def mouth(img, state):
@@ -172,17 +172,17 @@ def mouth(img, state):
     elif state == 1:
         ellipse(img, 27, 37, 37, 41, C["fire_red"])
         rect(img, 29, 38, 35, 40, C["black"])
-        grill(img, 30, 34, 38)
+        teeth(img, 30, 34, 38)
     elif state == 2:
         ellipse(img, 26, 36, 38, 43, C["fire_red"])
         ellipse(img, 27, 37, 37, 42, C["black"])
-        grill(img, 29, 35, 37)
+        teeth(img, 29, 35, 37)
         ellipse(img, 29, 40, 35, 42, C["tie"])  # tongue
-    else:  # wide grin, all grill
+    else:  # wide grin, all teeth
         ellipse(img, 25, 36, 39, 42, C["fire_red"])
         rect(img, 27, 38, 37, 40, C["black"])
-        grill(img, 27, 37, 38)
-        grill(img, 28, 36, 39)
+        teeth(img, 27, 37, 38)
+        teeth(img, 28, 36, 39)
         px(img, 25, 38, C["skin_dk"])
         px(img, 39, 38, C["skin_dk"])
 

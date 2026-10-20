@@ -40,9 +40,15 @@ export class TouchControls {
   private ciwsTapped = false;
   private gunTapped = false;
   private pauseTapped = false;
+  private dissTapped = false;
+  private readTapped = false;
+  private overlayHit: ((x: number, y: number) => boolean) | null = null;
 
   /** Arrow triangles in right, down, left, up order. */
   private arrows: Phaser.GameObjects.Triangle[] = [];
+  private dissBtn: Button;
+  private dissIcon: Phaser.GameObjects.Image;
+  private dissBar: Phaser.GameObjects.Rectangle;
   private ciwsBtn: Button;
   private ciwsIcon: Phaser.GameObjects.Image;
   private gunBtn: Button;
@@ -65,6 +71,10 @@ export class TouchControls {
       this.arrows.push(tri);
     }
 
+    this.dissBtn = this.button(136, 'DISS');
+    this.dissIcon = s.add.image(0, -10, 'hud_icons', 9).setScale(2.5);
+    this.dissBar = s.add.rectangle(-30, 14, 60, 4, GOLD).setOrigin(0, 0.5);
+    this.dissBtn.root.add([this.dissIcon, s.add.rectangle(-30, 14, 60, 4, 0x1d2b46).setOrigin(0, 0.5), this.dissBar]);
     this.ciwsBtn = this.button(228, 'CIWS');
     this.ciwsIcon = s.add.image(0, -8, 'hud_icons', 3).setScale(3);
     this.ciwsBtn.root.add(this.ciwsIcon);
@@ -116,7 +126,10 @@ export class TouchControls {
       return;
     }
     if (!this.enabled) return;
-    if (hit(this.ciwsBtn.rect)) {
+    if (hit(this.dissBtn.rect)) {
+      this.dissTapped = true;
+      this.press(this.dissBtn);
+    } else if (hit(this.ciwsBtn.rect)) {
       this.ciwsTapped = true;
       this.press(this.ciwsBtn);
     } else if (hit(this.gunBtn.rect)) {
@@ -130,6 +143,8 @@ export class TouchControls {
         this.padId = p.id;
         this.steer(p);
       }
+    } else if (this.overlayHit?.(x, y)) {
+      this.readTapped = true;
     } else if (this.aimId === null) {
       this.aimId = p.id;
       this.aimAt(p);
@@ -211,6 +226,22 @@ export class TouchControls {
     return t;
   }
 
+  takeDiss(): boolean {
+    const t = this.dissTapped;
+    this.dissTapped = false;
+    return t;
+  }
+
+  takeRead(): boolean {
+    const t = this.readTapped;
+    this.readTapped = false;
+    return t;
+  }
+
+  setOverlayHit(fn: (x: number, y: number) => boolean) {
+    this.overlayHit = fn;
+  }
+
   takeWeaponCycle(): boolean {
     const t = this.gunTapped;
     this.gunTapped = false;
@@ -230,6 +261,8 @@ export class TouchControls {
       this.releaseAll();
       this.ciwsTapped = false;
       this.gunTapped = false;
+      this.dissTapped = false;
+      this.readTapped = false;
     }
   }
 
@@ -237,13 +270,15 @@ export class TouchControls {
     this.gunIcon.setFrame(WEAPONS[key].icon);
   }
 
-  update(state: { ciwsReady: number }) {
+  update(state: { ciwsReady: number; dissReady: number }) {
     // Drop pointers whose end event never reached us (touchcancel, overlay, tab switch).
     const down = (id: number) => this.scene.input.manager.pointers.some((p) => p.id === id && p.isDown);
     if (this.padId !== null && !down(this.padId)) this.releasePad();
     if (this.aimId !== null && !down(this.aimId)) this.releaseAim();
 
     this.ciwsIcon.setAlpha(state.ciwsReady >= 1 ? 1 : 0.4);
+    this.dissIcon.setAlpha(state.dissReady >= 1 ? 1 : 0.4);
+    this.dissBar.width = 60 * Phaser.Math.Clamp(state.dissReady, 0, 1);
     this.flankRing.setVisible(this.flank);
     this.flankText.setColor(this.flank ? COLORS.gold : COLORS.text);
   }

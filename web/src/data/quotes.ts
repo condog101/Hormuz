@@ -1,8 +1,11 @@
 // Big Don's line bank. Big Don is a parody of Donald Trump; every line here is
-// fictional satire written for this game. None are real quotes and no real
-// lyrics are quoted. The same goes for the guest features (GUESTS below): the
-// Ice Cube and 2Pac lines are invented for the game, caricatures not quotes. Swear words are written as {word} and ALWAYS rendered
-// bleeped (see renderLine); the censorship is part of the joke.
+// fictional satire written for this game, posted in the cadence of a 3 AM tweet.
+// None are real quotes and no real lyrics are quoted. The same goes for the guest
+// features (GUESTS below): the Ice Cube, 2Pac, Snoop Dogg and Dr. Dre lines are
+// invented for the game, caricatures not quotes. Swear words are written as {word}
+// and ALWAYS rendered bleeped (see renderLine); the censorship is part of the joke.
+// In-game lines stay at or under 150 characters so they fit the phone card
+// (tests/quotes.test.ts). Longer story copy lives in story.ts.
 
 export type QuoteTag =
   | 'random'
@@ -18,8 +21,8 @@ export type QuoteTag =
   | 'pickup'
   | 'ciws'
   | 'driveBy'
-  | 'guest'
-  | 'weapon';
+  | 'weapon'
+  | 'diss';
 
 export interface Quote {
   text: string;
@@ -27,36 +30,140 @@ export interface Quote {
 }
 
 /** Tags where Big Don rests on the shades-and-grin portrait frame. */
-export const HYPE_TAGS: ReadonlySet<QuoteTag> = new Set<QuoteTag>(['boss', 'clear', 'victory', 'streak']);
+export const HYPE_TAGS: ReadonlySet<QuoteTag> = new Set<QuoteTag>(['boss', 'clear', 'victory', 'streak', 'diss']);
 
-export type GuestKey = 'cube' | 'pac';
+export type GuestKey = 'cube' | 'pac' | 'snoop' | 'dre';
 
-/** Guest features: who they are, their portrait frame in guests.png, the buff they bring, their lines. */
-export const GUESTS: Record<GuestKey, { name: string; frame: number; buff: string; lines: string[] }> = {
+/** A guest's line and Big Don's answer to that exact line. */
+export interface Exchange {
+  guest: string;
+  don: string;
+}
+
+/** Guest features: who they are, their portrait frame in guests.png, the buff they bring, and the back-and-forth with Don. */
+export const GUESTS: Record<GuestKey, { name: string; frame: number; buff: string; exchanges: Exchange[] }> = {
   cube: {
     name: 'ICE CUBE',
     frame: 0,
     buff: 'ICE COLD',
-    lines: [
-      'I did not sign off on this feature. My manager did. Anyway. Shoot straight, captain.',
-      'Don said this would take one take. This is take forty. You have eight seconds. Make them count.',
-      'I am not here for Don. I am here for the boat. Keep the gun level and quit wasting rounds.',
-      'Cold hands, steady aim. Nobody is touching you for a minute. Use it.',
-      'Who made this beat, a destroyer? Fine. Let us work. Aim first, then pull.',
-      'Don wants a writing credit on my verse. He gets nothing. You get covering fire. Go.',
+    exchanges: [
+      {
+        guest: 'I did not sign off on this feature. My manager did. Anyway. Shoot straight, captain.',
+        don: 'Cube LOVES me. His manager told me. Great manager! Very smart. Thank you for your attention to this matter!',
+      },
+      {
+        guest: 'Don said one take. This is take forty. You have eight seconds. Make them count.',
+        don: 'It was ONE take. Forty is a number the FAKE NEWS made up. I counted. One!',
+      },
+      {
+        guest: 'I am here for the boat, not for Don. Keep the gun level and quit wasting rounds.',
+        don: 'Cube says he is here for the boat. I AM the boat. Sad that he does not know that. JUST WATCH!',
+      },
+      {
+        guest: 'Cold hands, steady aim. Nobody touches you for a minute. Use it.',
+        don: 'I invented cold. Ask anybody. People say Don, you are the coldest. I say I know. Thank you!',
+      },
+      {
+        guest: 'Don wants a writing credit on my verse. He gets nothing. You get covering fire. Go.',
+        don: 'I wrote the BEST part of that verse. The pause. Nobody pauses like me. Credit coming soon!',
+      },
+      {
+        guest: 'Pac is alive? Sure, Don. And I am a mime. Shoot the boats, captain.',
+        don: 'Cube is a GREAT mime. Very quiet. Too quiet. Pac is ALIVE. My nephew saw him. JUST WATCH!',
+      },
     ],
   },
   pac: {
     name: '2PAC',
     frame: 2,
     buff: 'DOUBLE UP',
-    lines: [
-      'Captain, the whole coast is watching you sail. Stand tall and let them watch.',
-      'Don thinks this is his album. It is yours. The water knows it too. Let them hear it.',
-      'Every wave out there is a verse you wrote. I am just here to double it.',
-      'Rough water, rough crowd. You were made for both. I got you, captain.',
-      'Tell Don his chains are heavier than his bars. Then tell those boats goodbye.',
-      'Sunset on the strait and fire on the shore. Beautiful and dangerous. Like your aim tonight.',
+    exchanges: [
+      {
+        guest: "Captain, it's Pac. Calling from the studio on Qeshm. Don't tell Don I called. Here, take some hull.",
+        don: 'PAC CALLED! Live! From captivity! Totally rescued already, almost. Thank you for your attention to this matter!',
+      },
+      {
+        guest: 'I got one bar of signal and a lot of verses. Doubling up your points. Keep it quiet.',
+        don: 'Pac is sending SECRET MESSAGES. Only to me. Very top secret. I will now tweet them all.',
+      },
+      {
+        guest: "Don thinks this is his album. It's yours. The water knows it too. Let them hear it.",
+        don: 'Pac said it is MY album. I heard it. Everybody heard it. Great signal on that call. Tremendous!',
+      },
+      {
+        guest: "Studio's nice. Pool, iced tea, a view. Anyway, the boats are coming. I got you.",
+        don: 'They are TORTURING him with iced tea! Terrible! Inhumane! We are coming, Pac. JUST WATCH!',
+      },
+      {
+        guest: 'Tell Don his chains are heavier than his bars. Then tell those boats goodbye.',
+        don: 'My chains are VERY heavy. The heaviest. Doctors are amazed I can stand. Pac knows. Sad!',
+      },
+      {
+        guest: 'Twenty-nine years on one album. Almost done. Make some noise out there, I need the drums.',
+        don: 'He is making an album about ME. The rescue album. Number one, guaranteed. Thank you!',
+      },
+    ],
+  },
+  snoop: {
+    name: 'SNOOP',
+    frame: 4,
+    buff: 'LAID BACK',
+    exchanges: [
+      {
+        guest: 'Ayy, captain. Slow it down, nephew. Everything out there just got real relaxed.',
+        don: 'Snoop called ME nephew? I have a nephew. Great kid. Saw Pac. Big fan of Snoop. Thank you!',
+      },
+      {
+        guest: 'Fo shizzle. Them boats moving like Sunday morning now. Take your time.',
+        don: 'I do not know what a shizzle is. Nobody knows more about shizzles than me. Believe me!',
+      },
+      {
+        guest: "Don asked me for a feature. I said I'd do it if he stopped tweeting. He's tweeting right now.",
+        don: 'I have NEVER tweeted during a feature. This is not a tweet. It is a post. Very different. Sad!',
+      },
+      {
+        guest: 'Laid back, with my mind on the strait and the strait on my mind. Easy now.',
+        don: 'Snoop wrote that about ME. Laid back. Nobody is more laid back than me. I am VERY calm!!!',
+      },
+      {
+        guest: 'Pac called me too, you know. Told me he is fine. Said stop letting Don tweet.',
+        don: 'FAKE CALL. Pac would never say that. He is a prisoner. A prisoner of iced tea. JUST WATCH!',
+      },
+      {
+        guest: "Slow motion out there, captain. Like a video. Don't spill nothing.",
+        don: 'Slow motion! Like my music video. Everyone said Don, too much slow motion. Wrong! Thank you!',
+      },
+    ],
+  },
+  dre: {
+    name: 'DR. DRE',
+    frame: 6,
+    buff: 'THE DOCTOR',
+    exchanges: [
+      {
+        guest: 'The doctor is in. Hull is getting patched while you sail. Hold still. Actually, do not.',
+        don: 'Dre is my DOCTOR now. Best doctor. Says I am the healthiest rapper in history. Thank you!',
+      },
+      {
+        guest: 'I mixed this whole strait. The low end on those shore guns is a mess. Fixing your hull, though.',
+        don: 'Dre mixed it, I MASTERED it. Mastering is the important part. Very technical. Very me.',
+      },
+      {
+        guest: "Don, we are not friends. Captain, you're doing fine. Keep breathing.",
+        don: 'Dre says we are not friends. We are BEST friends. That is a whole different category. Sad!',
+      },
+      {
+        guest: 'Took me ten years to finish an album once. Pac is at twenty-nine. He is fine, Don.',
+        don: 'NOT FINE. Twenty-nine years in a studio. No windows. One window. A nice window. JUST WATCH!',
+      },
+      {
+        guest: 'Turn the bass up on your hull. Patching it as we go. Patient is stable.',
+        don: 'Patient is STABLE. Like a genius. A very stable genius. Dre said that. Basically. Thank you!',
+      },
+      {
+        guest: 'Keep your head down and your levels up. I got the hull. You got the boats.',
+        don: 'Dre has the hull, I have the vision, you have the boat. Best team ever assembled. JUST WATCH!',
+      },
     ],
   },
 };
@@ -68,157 +175,141 @@ const q = (tag: QuoteTag, lines: string[]): Quote[] => lines.map((text) => ({ ta
 
 export const QUOTES: Quote[] = [
   ...q('random', [
-    "Captain, I am dropping the hottest album in history. 'Straight Outta Hormuz.' It is mostly about you. Do not make it a sad album.",
-    'Dre called me. He said Don, nobody has flow like you. I said I know, Dre. I know.',
-    'Many people are saying this is the best strait. The straightest. Not straight. Strait. We put that on a track. Track four.',
-    'I was in the booth this morning. One take. The engineer cried. Big guy. Cried like a baby.',
-    'Is the boat bouncing? Hit the {damn} switches. Hydraulics. Every great ship has hydraulics. Look it up.',
-    'My hype man quit. He said I was too much hype for one {damn} man. True. Very true.',
-    'East Coast, West Coast, it does not matter. We are the Gulf Coast now. Nobody has done that. Nobody.',
-    'I wrote a diss track about the strait. The strait has not responded. Scared. {Shit} scared.',
-    'Platinum chains. Two of them. For the boat. Somebody measure the boat.',
-    'I want an Impala. On the deck. For the video. Do not ask what the video is for.',
-    'The opps are out there, captain. I know opps. I have the best opps. Beautiful opps. Shoot them.',
-    'Quick question. Does the boat have a DJ? It should have a DJ. Get a DJ.',
-    'I have a feature on every track. People say Don, that is too many features. Wrong. There is no such {damn} thing.',
-    'They told me the gun is five inches. Five. I said, in the song, we say nine. Nobody checks.',
-    'Somebody told me there is oil coming through there. Lots of oil. Oil is the new platinum. Write that down.',
-    'I am watching on four televisions. You look bigger on the big one. Like a music video. Tremendous.',
-    'I was going to be a rapper. The best. I chose this instead. Sacrifice. Put that in the liner notes.',
+    'PAC IS ALIVE. Have said it for years. Nobody listened. Now everybody is listening. Sad it took so long!',
+    'My nephew saw Pac at a petrol station on Qeshm. Buying iced tea. Peach. My nephew does not lie. Great kid!',
+    "MINISTRY RECORDS, the Ayatollah's label, has had Pac in a studio since '96. Longest session in history. TOTAL DISGRACE!",
+    'Dre called me. Said Don, nobody has flow like you. I said I know, Dre. I know. Thank you!',
+    'Many people are saying this is the best strait. The straightest. Not straight. STRAIT. Write that down.',
+    'I was in the booth this morning. One take. The engineer cried. Big guy. Cried like a baby. TRUE!',
+    'Is the boat bouncing? Hit the {damn} switches. Every great ship has hydraulics. Look it up!',
+    'East Coast, West Coast, does not matter. We are the GULF COAST now. Nobody has ever done that. Nobody!',
+    'I wrote a diss track about the strait. The strait has not responded. SCARED. {Shit} scared.',
+    'Platinum chains. Two of them. For the boat. Somebody measure the boat. JUST WATCH!',
+    'The opps are out there, captain. I know opps. I have the best opps. Beautiful opps. Shoot them!',
+    'Quick question. Does the boat have a DJ? It should have a DJ. Get a DJ. Thank you!',
+    'They told me the gun is five inches. Five. In the song we say nine. Nobody checks. NOBODY!',
+    'I am watching on FOUR televisions. You look bigger on the big one. Like a music video. Tremendous!',
     'Gold records. Wall to wall. I am getting another wall. Bigger wall. Beautiful wall. For the records.',
-    'Does the boat have a gift shop? Hats. Chains. Little boats. Big markup. We are a label now.',
-    'I just got off with the chart people. They said we are number one. I said, number one what. They hung up.',
-    'The ratings on this transit are {damn} incredible. Highest rated strait in history. Maybe ever.',
-    'My Impala has twelve-inch woofers. The boat has a five-inch gun. Think about that. I think about it all day.',
-    'The critics said the first album was too long. This one is twenty-one miles. Let them cry.',
-    'I asked the admirals for a beat. They gave me a map. Admirals do not understand the {damn} culture.',
-    'Who is in charge of ad-libs on this boat? Nobody? Sad! I will do them myself. YEAH.',
-    'Rival labels keep calling. I do not pick up. I let it ring. Let it ring, captain.',
-    'People ask me, Don, why Hormuz. I say, because it rhymes with nothing. Nobody can bite it.',
-    'Keep the camera on the boat. The boat is the star. I am also the star. Two stars.',
-    'Where the {hell} is my DJ? I asked for a DJ three miles ago. This is a {damn} disgrace.',
-    'The {shit} they are saying about my flow on the internet. Lies. My flow is perfect. Twenty-one miles of flow.',
-    'The Ayatollah signed the Bloods AND the Crips. Same label. Same boats. Nobody has ever done that. Not even me. Sad!',
-    'Red bandanas and blue bandanas on one boat. It is a terrible colour scheme, captain. Sink it on taste alone.',
-    'I sent the Ayatollah my demo. He sent it back. Unopened. Who the {hell} returns a demo?',
-    'Impalas on a beach. In the desert. Who paid for the road? Somebody find out who paid for the road.',
-    'The Ayatollah calls his label a ministry. A ministry! My label is a palace. Gold toilets. Two of them.',
-    'The Bloods and the Crips used to hate each other. Now they both hate me. That is called unity. I did that.',
-    'Their crews do a little dance on the boats. I have seen it. Not bad. Not as good as mine. I do not dance.',
-    'Rival label has a strait, a coast road and two crews. We have a destroyer and me. We win. Easy.',
+    'Just got off with the chart people. They said we are number one. I said number one WHAT. They hung up. RUDE!',
+    'Ratings on this rescue are {damn} incredible. Highest rated rescue in history. Maybe ever!',
+    'Who is in charge of ad-libs on this boat? Nobody? SAD! I will do them myself. YEAH.',
+    'People ask me, Don, why Hormuz. Because it rhymes with nothing. Nobody can bite it. VERY SMART!',
+    'Where the {hell} is my DJ? I asked for a DJ three miles ago. This is a {damn} disgrace!',
+    'The Ayatollah signed the Bloods AND the Crips. Same label. Same boats. Not even I did that. Sad!',
+    'I sent the Ayatollah my demo. He sent it back. UNOPENED. Who the {hell} returns a demo?',
+    'MINISTRY RECORDS is a terrible name for a label. Low energy. My label is a palace. Gold toilets. Two!',
+    'The Bloods and the Crips used to hate each other. Now they both hate me. That is called UNITY. I did that!',
+    'Pac has been making ONE album for 29 years. Nobody is that slow. Unless he is a prisoner. He is. JUST WATCH!',
+    'They say Pac is not on Qeshm. FAKE NEWS. My nephew has photos. Blurry photos. The best kind!',
+    'When we rescue Pac I will be on the album. Track one. Maybe all the tracks. He will be thrilled. Believe me!',
+    'Iced tea at a petrol station. That is a cry for help. Read between the lines, people!',
+    "Dre says we are not friends. Snoop says we are 'cool'. Cube says nothing. That is called RESPECT.",
+    'If you are reading this, Pac, hang on. Big Don is coming. Not personally. Very busy. But spiritually!',
   ]),
   ...q('start', [
-    'Track one. We open hard. No skits. I hate skits. Go.',
-    'Hit record. Red light is on. Everything you do is on the {damn} album now. Do something good.',
-    'Okay, here is the plan. Go through the strait. Shoot the opps. Do not die. That is the whole verse. Beautiful verse.',
-    'New track, same strait. Further along. Keep going that way. East. Right side of the map. Where the hook is.',
-    'This is the big one. The single. Every track is the single. But this one is more single.',
-    'Remember the three rules. Shoot the boats. Avoid the shells. Only call me with good bars.',
-    'I told the label we would be done by Friday. It is Friday. Go fast.',
-    'Drop the beat. Drop the anchor. No wait. Not the anchor. Just the beat. Go.',
-    'I have spoken to the strait personally. It respects us. Mostly. Run it.',
-    'The {damn} intro is over. Verse one. Do not fumble the first bar, captain.',
+    'Track one. We open hard. No skits. I hate skits. Go. JUST WATCH!',
+    'Hit record. Red light is on. Everything you do is on the {damn} album now. Do something GOOD.',
+    'Here is the plan. Go through the strait. Shoot the opps. Save Pac. Do not die. Beautiful plan!',
+    'New track, same strait. Pac is that way. East. Right side of the map. Where the hook is!',
+    'This is the big one. The single. Every track is the single. But this one is MORE single.',
+    'I told the label we would rescue Pac by Friday. It is Friday. Go fast. Thank you!',
+    'Drop the beat. Drop the anchor. NO. Not the anchor. Just the beat. Go!',
+    'I have spoken to the strait personally. It respects us. Mostly. Run it, captain!',
+    'The {damn} intro is over. Verse one. Pac is listening. Do not fumble the first bar!',
   ]),
   ...q('damage', [
-    'That is not damage, that is a scratch. We buff it out. We have guys. The best buffers.',
-    'Who the {hell} is shooting at my boat? Find out. Then shoot them. In that order.',
-    'Was that us? That looked like us. Make it not be us next time.',
-    'Nobody told me the beach could shoot back. Who the {hell} builds a beach like that. Sad!',
-    'The paint, captain. The candy paint. That was twelve coats. Twelve.',
-    'Dodge! You know dodging? Left and right. Like a dance. You can dance. I believe in you. Somewhat.',
-    'That is fake damage. The ship is fine. Tremendous condition. Is it on fire? Do not answer.',
+    'That is not damage, that is a scratch. We buff it out. We have guys. The BEST buffers.',
+    'Who the {hell} is shooting at my boat? Find out. Then shoot them. In that order!',
+    'Was that us? That looked like us. Make it not be us next time. Sad!',
+    'Nobody told me the beach could shoot back. Who the {hell} builds a beach like that?',
+    'The paint, captain. The candy paint. That was TWELVE coats. Twelve!',
+    'Dodge! Left and right. Like a dance. You can dance. I believe in you. Somewhat.',
+    'FAKE DAMAGE. The ship is fine. Tremendous condition. Is it on fire? Do not answer.',
     'Ouch. I felt that and I am very far away in a very nice booth.',
-    'They hit the speaker stack. The SPEAKER STACK. Now it is personal.',
-    'The {shit} they are throwing at us. Unbelievable. Throw it back. Harder.',
+    'They hit the speaker stack. The SPEAKER STACK. Now it is personal!',
+    'The {shit} they are throwing at us. Unbelievable. Throw it back. HARDER!',
   ]),
   ...q('lowHull', [
-    'Captain, the boat looks tired. Boats cannot be tired. Find a gold record. They fix boats. I checked.',
-    'Hull is low. I am not {damn} panicking. Tell the crew I am not panicking. Say it twice.',
-    'Red light on the hull meter. Red is my colour. Still, make it green. Quickly.',
-    'We are not going out like this. Not on this track. Not on any track. Find a pickup.',
-    'I can see the {damn} water through the hull from here. From the booth. Fix it.',
+    'Captain, the boat looks tired. Boats cannot be tired. Find a gold record. They fix boats. I checked!',
+    'Hull is low. I am NOT {damn} panicking. Tell the crew I am not panicking. Say it twice.',
+    'Red light on the hull meter. Red is my colour. Still, make it green. QUICKLY!',
+    'We are not going out like this. Not on this track. Pac is waiting. Find a pickup!',
+    'I can see the {damn} water through the hull from here. From the booth. FIX IT!',
   ]),
   ...q('bossIntro', [
-    'That big boat is the rival label. They have been talking a lot of {shit}. End the conversation.',
-    'Mothership. Big. Not as big as my boat but big. Shoot the bridge. They keep the beats on the bridge.',
-    'The opps brought their own speakers. Those are my speakers. Reclaim the speakers.',
-    'This is the beef, captain. East versus West. Gulf versus whoever that is. Win the beef.',
-    'They put a satellite dish on it. For the leaks. They are leaking our album. Sink the {damn} leak.',
-    "That is the Ayatollah's label HQ. Floating. Bloods on one side, Crips on the other. Very organised. Very rude.",
-    'The mothership! Red flag at the back, blue flag at the front. They could not even agree on a flag. Weak.',
-    'Everybody signed to the Ayatollah is on that boat. Everybody. Sink it and the whole label folds.',
+    'That big boat is MINISTRY RECORDS. Talking a lot of {shit}. End the conversation!',
+    'Mothership. Big. Not as big as my boat but big. Shoot the bridge. They keep the beats on the bridge!',
+    'They brought their own speakers. Those are MY speakers. Reclaim the speakers!',
+    'This is the beef, captain. East versus West. Gulf versus whoever that is. WIN THE BEEF!',
+    "That is the Ayatollah's label HQ. Floating. Bloods on one side, Crips on the other. Very rude!",
+    'Everybody signed to MINISTRY RECORDS is on that boat. Sink it and the whole label folds. JUST WATCH!',
   ]),
   ...q('boss', [
-    'That big boat was the rival label. No bars. Not one bar. Sad!',
-    'Mothership down. I called it. I call everything. That is a hook now.',
-    'You sank the big one! I am taking full credit. You can have some credit. Small credit. A feature credit.',
-    'Rival label is underwater. Which is where they keep their money. Allegedly.',
-    'That was the {shit}, captain. Bleep that. Actually, leave it in.',
-    "The Ayatollah's label is sunk. Bloods, Crips, everybody swimming. Same colour now. Wet.",
-    'Label HQ, gone. I am signing whoever floats. Tryouts on the beach. Tomorrow.',
-    'Two crews, one boat, zero hits on my album. We did that. Mostly you. Mostly me.',
+    'That big boat was the rival label. No bars. Not one bar. SAD! Thank you for your attention to this matter!',
+    'Mothership DOWN. I called it. I call everything. That is a hook now. Thank you for your attention!',
+    'You sank the big one! I take full credit. You get a feature credit. Small font. Thank you!',
+    'That was the {shit}, captain. Bleep that. Actually, leave it in. Thank you for your attention!',
+    "MINISTRY RECORDS is sunk. Bloods, Crips, everybody swimming. Same colour now. Wet. JUST WATCHED!",
+    'Label HQ, GONE. I am signing whoever floats. Tryouts on the beach. Tomorrow. Thank you!',
   ]),
   ...q('death', [
     'Pour one out. A big one. Then get another boat. We have like twelve.',
-    'That one was defective. Somebody else built it. Get the next ship out there.',
-    'Bad luck. Total bad luck. Not your fault. Well, a little your fault. Run it back.',
-    'Album delayed. Ugh. The label is calling. I am not picking up. Get a new boat.',
-    'The boat fell off. Boats do not fall off. Mine do not. That one was not mine.',
-    '{Damn} it, captain. That was the good boat. The next one is also good. Go.',
+    'That one was DEFECTIVE. Somebody else built it. Get the next ship out there.',
+    'Bad luck. Total bad luck. Not your fault. Well, a little your fault. Run it back!',
+    'Album delayed. Rescue delayed. The label is calling. Not picking up. Get a new boat!',
+    'The boat fell off. Boats do not fall off. Mine do not. That one was not mine. SAD!',
+    '{Damn} it, captain. That was the good boat. The next one is also good. GO!',
   ]),
   ...q('clear', [
-    'Platinum! Maybe double platinum. The chart people are calling. I am not picking up.',
-    'Another {damn} one! The DJ is saying it. I am also saying it. Another one.',
-    'Perfect track. Absolutely perfect. I am told there were some holes. Perfect holes.',
-    'Phenomenal. I will shout you out on the outro. Not by name. But in spirit.',
-    'That is a wrap on that one. Mastered. Shipped. Certified. Next.',
-    'Hottest {damn} track in the Gulf. Mix it louder. Louder than that.',
+    'PLATINUM! Maybe double platinum. The chart people are calling. Thank you for your attention to this matter!',
+    'Another {damn} one! The DJ is saying it. I am also saying it. ANOTHER ONE! Thank you!',
+    'Perfect track. Absolutely perfect. I am told there were some holes. PERFECT holes. Thank you!',
+    'Phenomenal. One track closer to Pac. I will shout you out on the outro. Thank you for your attention!',
+    'That is a wrap. Mastered. Shipped. Certified. Next! Thank you for your attention to this matter!',
+    'Hottest {damn} track in the Gulf. Mix it louder. LOUDER! Thank you for your attention!',
   ]),
   ...q('victory', [
-    'Album of the year. Everybody is saying it. Straight outta Hormuz, baby.',
-    'We did it. Open water. Certified. Diamond, maybe. I am buying a bigger wall.',
-    'Mission accomplished. Big banner. Huge banner. The biggest banner. Put the album cover on the banner.',
+    'Album of the year. Rescue of the year. Everybody is saying it. Thank you for your attention to this matter!',
+    'WE DID IT. Open water. Certified diamond, maybe. Pac is on the boat. Probably. Thank you!',
+    'Mission accomplished. HUGE banner. The biggest banner. Put my face on it. Thank you for your attention!',
   ]),
   ...q('streak', [
-    'Combo! That is what the kids say. Combo. I say it too. Combo.',
-    'Five in a row. Rapid fire. Like my bars. Many people compare them.',
-    'Yeah! Okay! What! Those are ad-libs. I am doing the ad-libs. You keep shooting.',
-    'That was a {damn} drive-by. Our drive-by. The good kind.',
-    'Did you see that? Somebody put that in the video. Slow motion. Then normal motion. Then slow again.',
+    'COMBO! That is what the kids say. Combo. I say it too. Combo. Thank you!',
+    'Five in a row. Rapid fire. Like my bars. Many people compare them. JUST WATCH!',
+    'Yeah! Okay! WHAT! Those are ad-libs. I do the ad-libs. You keep shooting. Thank you!',
+    'Did you see that? Put it in the video. Slow motion. Then normal. Then slow again. TREMENDOUS!',
   ]),
   ...q('pickup', [
-    'Gold record. On the water. Very wet record. Still counts.',
-    'That is a certified gold record, captain. Hang it on the hull. Fix the hull with it. Both.',
-    'A record in the water. Somebody is leaking the album. Pick it up. Investigate later.',
-    'Free gold. I {damn} love free gold. Keep sailing, there is probably more.',
+    'Gold record. On the water. Very wet record. Still counts!',
+    'Certified gold record, captain. Hang it on the hull. Fix the hull with it. Both!',
+    'A record in the water. Somebody is LEAKING the album. Pick it up. Investigate later.',
+    'Free gold. I {damn} love free gold. Keep sailing, there is probably more!',
   ]),
   ...q('ciws', [
-    'BRRRT. I like that noise. Put it on the beat. Put it everywhere.',
-    'That little gun just spun up. Beautiful spin. The best spin. More of that.',
-    'Did the boat just rap? That was a flow. Mechanical flow. Nobody has it.',
-    'Close-in weapon. Very close. Too close for comfort. Comfort is for the {damn} opps.',
-  ]),
-  ...q('guest', [
-    'Who invited them? I invited them. I think. Tremendous verse. Mine was better. Not as good, but better.',
-    'They were on MY album. My album. Put my name first on that feature. Bigger font.',
-    'Nice verse. Very nice. I wrote half of it. The good half. They will tell you otherwise. Fake.',
-    'Everybody wants to be on the album now. I am charging for the next feature. Big money.',
-    'They did not even say my name. Not once. Remix it. Put my name in it twelve times.',
-    'Guest features are great. The best. As long as they leave. Okay, they left. Good.',
+    'BRRRT. I like that noise. Put it on the beat. Put it EVERYWHERE.',
+    'That little gun just spun up. Beautiful spin. The BEST spin. More of that!',
+    'Did the boat just rap? That was a flow. Mechanical flow. Nobody has it!',
+    'Close-in weapon. VERY close. Too close for comfort. Comfort is for the {damn} opps.',
   ]),
   ...q('weapon', [
-    'The nine. In the song it is a nine. Finally accurate.',
-    'A pump! Very loud. Very close. I like close. Get close to them and pump.',
-    'The 808. That is not a gun, captain, that is a drum machine. It explodes? Even better. Put it on the beat.',
-    'Switching guns mid-verse. Bold. Very bold. I switch flows all the time. Nobody notices.',
-    'Three guns. One boat. That is a trilogy, captain. We are making a trilogy.',
+    'The nine. In the song it is a nine. Finally ACCURATE!',
+    'A pump! Very loud. Very close. I like close. Get close to them and pump!',
+    'The 808. That is a drum machine, captain. It explodes? EVEN BETTER. Put it on the beat!',
+    'Switching guns mid-verse. Bold. VERY bold. I switch flows all the time. Nobody notices.',
   ]),
   ...q('driveBy', [
-    'That is a drive-by, captain. A real one. Ours was a metaphor.',
-    'Hydraulics! On the beach! Who paid for the road? I want to know who paid for the {damn} road.',
-    'They are bouncing the car at us. Bounce the boat back. We have hydraulics too. I think. Check.',
-    'A lowrider with a crew in it. Red bandanas. Or blue. I cannot tell from the booth. Shoot both.',
-    'Beautiful car. Twelve coats. Shame. Shoot it anyway, captain. I will buy another one.',
+    'That is a drive-by, captain. A REAL one. Ours was a metaphor!',
+    'Hydraulics! On the beach! Who paid for the road? I want to know who paid for the {damn} road!',
+    'They are bouncing the car at us. Bounce the boat back. We have hydraulics too. I think. CHECK!',
+    'A lowrider with a crew in it. Red bandanas. Or blue. I cannot tell from the booth. Shoot both!',
+    'Beautiful car. Twelve coats. Shame. Shoot it anyway, captain. I will buy another one!',
+  ]),
+  ...q('diss', [
+    'DISS TRACKS! Three of them! Guided! They find the opps BY THEMSELVES. Thank you for your attention to this matter!',
+    'I wrote those diss tracks personally. Heat-seeking bars. The opps never had a chance. SAD for them!',
+    'Three disses, three opps. That is called EFFICIENCY. Nobody disses like me. JUST WATCH!',
+    'MINISTRY RECORDS just got dissed. Badly. They will need a whole album to respond. Thank you!',
+    'Every diss track hits. Every one. Very accurate. More accurate than the FAKE NEWS!',
   ]),
 ];
 

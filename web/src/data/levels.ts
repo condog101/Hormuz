@@ -36,6 +36,8 @@ export interface LevelDef {
   driveByMs: number;
   pickupMs: number;
   boss: boolean;
+  /** Label over the boss health bar. */
+  bossName?: string;
   /** Final stretch opens into the Gulf of Oman. */
   openWater?: boolean;
   /** Golden-hour haze over the whole screen, 0..1 (cosmetic). */
@@ -77,6 +79,7 @@ export const LEVELS: LevelDef[] = [
     artillery: { spacing: 560, fireMinMs: 2800, fireMaxMs: 4000, spread: 46, lead: 0.5 },
     boats: { intervalMs: 2500, speed: 150, zigChance: 0.45, swarmChance: 0.22, swarmMin: 4, swarmMax: 6 },
     minesMs: 3400, dronesMs: 6500, batterySpacing: 0, driveByMs: 7000, pickupMs: 18000, boss: true, haze: 0.5,
+    bossName: "THE AYATOLLAH'S MOTHERSHIP",
   },
   {
     n: 6, name: 'MUSANDAM CLIFFS', durationS: 80, scroll: 95, straitWidth: 280, coastNoise: 60,
@@ -108,10 +111,11 @@ export const LEVELS: LevelDef[] = [
   },
   {
     n: 10, name: 'OUTRO: OPEN SEA', durationS: 90, scroll: 115, straitWidth: 360, coastNoise: 56,
-    brief: "Open water is in sight. One more fight with the Ayatollah's mothership and the album is done. No skits.",
+    brief: "Open water is in sight. MINISTRY RECORDS parked a prison barge across the exit. Sink it and the album is done. No skits.",
     artillery: { spacing: 450, fireMinMs: 2100, fireMaxMs: 3000, spread: 32, lead: 0.75 },
     boats: { intervalMs: 1800, speed: 175, zigChance: 0.6, swarmChance: 0.35, swarmMin: 5, swarmMax: 6 },
     minesMs: 2500, dronesMs: 4400, batterySpacing: 1000, driveByMs: 4800, pickupMs: 15000, boss: true, openWater: true, haze: 1,
+    bossName: 'MINISTRY RECORDS PRISON BARGE',
   },
 ];
 

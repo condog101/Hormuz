@@ -11,12 +11,14 @@ export interface RunState {
   lives: number;
   kills: number;
   playMs: number;
-  /** The last guest feature, so the next one is the other guest. */
+  /** The last guest feature, so the next one is somebody else. */
   lastGuest?: GuestKey;
   /** Main gun in hand; carries over from track to track. */
   weapon: WeaponKey;
   /** Big Don has commented on a weapon switch this run. */
   switchedWeapon?: boolean;
+  /** Big Don has commented on the first DISS TRACKS salvo this run. */
+  usedDiss?: boolean;
 }
 
 export function newRun(mode: RunState['mode'], startLevel: number): RunState {

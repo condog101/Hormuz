@@ -5,12 +5,22 @@ Big Don, a parody of Donald Trump, calls in from the studio with bars, ad-libs a
 swearing while you run the strait. Phaser 3 + TypeScript client, Cloudflare Worker + D1
 backend for MC-name profiles and a shared chart (leaderboard).
 
+The plot: 2Pac is alive. Big Don's nephew saw him buying iced tea at a petrol station on Qeshm,
+where MINISTRY RECORDS (the Ayatollah's label) has supposedly kept him in a studio since '96, so
+Don sends you up the strait to rescue him. Before each campaign track Don posts a briefing as a
+run of tweet cards (the first ones double as the tutorial, worded for whichever controls you're
+using), and rappers reply. Pac keeps sneaking calls out mid-track. The twist is that he never
+needed rescuing: he lives there, has a villa, and was just finishing an album. Don takes the
+credit anyway. Everything is fictional satire; swearing stays bleeped.
+
 From track 2 the shore carries a coast road, and lowriders (red Bloods or blue Crips, who have
 signed to the Ayatollah's rival label) cruise it, slow down alongside the ship, flash
 `! DRIVE-BY !` and spray a burst before peeling off. From track 3 a golden mic floats down the
-strait once per track: collect it for a guest feature. Ice Cube brings ICE COLD (8 s
-untouchable, double fire rate); 2Pac brings DOUBLE UP (+40 hull, 10 s of double kill points).
-The next mic brings the other guest.
+strait once per track: collect it for a guest feature, and Big Don answers whatever the guest
+said. Ice Cube brings ICE COLD (8 s untouchable, double fire rate); 2Pac brings DOUBLE UP
+(+40 hull, 10 s of double kill points); Snoop brings LAID BACK (8 s with every hostile boat,
+shell, missile and spawn at half speed); Dr. Dre brings THE DOCTOR (+30 hull, then +3 hull a
+second for 10 s). The next mic never brings the same guest twice in a row.
 
 The deployed Worker, D1 database, package name and localStorage keys still use the original
 `hormuz-run` / `hormuz.*` names so the URL and saved progress survive the rebrand.
@@ -26,13 +36,16 @@ npm run dev                # Vite on :5173, Worker API on :8787 (proxied at /api
 Open http://localhost:5173.
 
 Controls: WASD/arrows move, mouse aims, click/Space fires, Shift = flank speed,
-E (or right click) = CIWS burst, Esc = pause, 1/2/3 or Tab/mouse wheel = switch weapon.
-A gamepad works too (left stick move, right stick aim, RT fire, B/RB CIWS, LB flank,
-Y switch weapon).
+E (or right click) = CIWS burst, R (or middle click) = DISS TRACKS, Esc = pause,
+1/2/3 or Tab/mouse wheel = switch weapon.
+A gamepad works too (left stick move, right stick aim, RT fire, B/RB CIWS, X DISS TRACKS,
+LB flank, Y switch weapon).
 On phones and tablets (coarse pointer) the game shows touch controls instead: an 8-way arrow
 pad in the bottom-left moves, touching anywhere else aims the gun at that spot and fires while
-held (THE 808 lobs to it), CIWS / GUN / FLANK buttons sit on the right edge and `II` at the top
-pauses. Add
+held (THE 808 lobs to it), DISS / CIWS / GUN / FLANK buttons sit on the right edge and `II` at
+the top pauses. Dialogue cards are wider with bigger text on phones and stay up longer; tap a
+card to freeze the game and read the line full-size, then tap again to get back to it. The pause
+screen repeats the last line too. Add
 `?touch=1` to the URL to force the touch UI on desktop, or `?touch=0` to turn it off.
 
 Three main guns, all available from the start; the one in hand carries over between tracks:
@@ -40,10 +53,15 @@ THE NINE (fast machine gun), THE PUMP (six-pellet short-range shotgun) and THE 8
 lobbed to the cursor, up to 380 px, whose blast hits everything within 70 px, shore guns
 included).
 
+DISS TRACKS sit beside the main guns: a salvo of three gold guided missiles that lock the nearest
+three opps within 600 px (gold reticles on each) and curl round to hit them. It recharges over
+12 s (the gold bar next to the CIWS in the HUD, and under the DISS button on touch). With no opps
+in range it says so and keeps the charge.
+
 ## Tests
 
 ```bash
-npm test                          # vitest: worker API, shared logic, level table
+npm test                          # vitest: worker API, shared logic, level table, line lengths
 python3 tools/sprites/test_gen.py # sprite sheet dimensions
 ```
 
@@ -74,12 +92,12 @@ The game is then live at `https://hormuz-run.<your-subdomain>.workers.dev`.
 - `web/src/scenes`: Boot, Title, Login, LevelIntro, Game, LevelClear, GameOver, Leaderboard
 - `web/src/entities`: player, enemies, projectiles
 - `web/src/systems`: coastline, spawner, HUD, Big Don popups (typewriter + bleeps), ad-libs, audio (ZzFX), saves
-- `web/src/data`: `levels.ts` (tracklist and difficulty table), `quotes.ts` (Big Don's line bank), `balance.ts`
+- `web/src/data`: `levels.ts` (tracklist and difficulty table), `quotes.ts` (Big Don's line bank and guest exchanges), `story.ts` (tweet briefings, ending, story beats), `balance.ts`
 - `shared/`: progress merge and score plausibility, used by both client and Worker
 - `worker/`: API routes, PIN hashing, D1 queries, migrations
 - `tools/sprites`: Pillow sprite generator
 
 Big Don is a parody of Donald Trump. Every line is fictional satire written for this game; none
-are real quotes, and no real lyrics are quoted. Ice Cube and 2Pac appear as caricatures; their
+are real quotes, and no real lyrics are quoted. Ice Cube, 2Pac, Snoop Dogg and Dr. Dre appear as caricatures; their
 lines are invented for the game too, not quotes or lyrics. Swear words are written as `{word}` in
 `quotes.ts` and always rendered bleeped.

@@ -25,7 +25,7 @@ export class GameOverScene extends Phaser.Scene {
     panel(this, 160, 60, 640, 420);
     text(this, WIDTH / 2, 100, victory ? 'CERTIFIED PLATINUM' : 'FELL OFF', 32, victory ? COLORS.gold : COLORS.red);
     if (victory) {
-      text(this, WIDTH / 2, 140, 'YOU RAN THE STRAIT. HIDDEN TRACKS UNLOCKED.', 8, COLORS.green);
+      text(this, WIDTH / 2, 140, 'YOU RAN THE STRAIT. PAC IS (ALLEGEDLY) ON THE BOAT.', 8, COLORS.green);
       Audio.play('clear');
     } else {
       Audio.play('death');

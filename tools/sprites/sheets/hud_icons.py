@@ -1,11 +1,12 @@
 """HUD icons, 16x16: hull, life, gold record (score), CIWS, microphone, speaker, and the three main-gun
-weapons: THE NINE (pistol), THE PUMP (shotgun), THE 808 (drum machine pad with a shockwave)."""
+weapons: THE NINE (pistol), THE PUMP (shotgun), THE 808 (drum machine pad with a shockwave), plus the
+DISS TRACKS guided missile."""
 from draw import bevel, circle, disc, ellipse, new, outline, poly, px, rect, strip
 from palette import C
 
 NAME = "hud_icons"
 FRAME = (16, 16)
-FRAMES = 9
+FRAMES = 10
 
 
 def hull():
@@ -123,5 +124,22 @@ def boom():
     return img
 
 
+def diss():
+    img = new(16, 16)
+    # fat gold missile flying up and to the right: red nose cone, red fins, purple exhaust
+    poly(img, [(3, 10), (10, 3), (13, 6), (6, 13)], C["gold"])
+    poly(img, [(5, 12), (12, 5), (13, 6), (6, 13)], C["gold_dk"])
+    poly(img, [(10, 3), (14, 1), (13, 6)], C["candy"])  # nose
+    px(img, 13, 2, C["cream"])
+    poly(img, [(3, 10), (1, 8), (1, 11)], C["candy"])  # fins
+    poly(img, [(6, 13), (8, 15), (5, 15)], C["candy"])
+    px(img, 2, 13, C["purple"])
+    px(img, 3, 13, C["purple_lt"])
+    px(img, 1, 14, C["purple"])
+    px(img, 6, 8, C["white"])
+    px(img, 7, 7, C["white"])
+    return outline(img)
+
+
 def build():
-    return strip([hull(), life(), record(), ciws(), mic(), speaker(), nine(), pump(), boom()])
+    return strip([hull(), life(), record(), ciws(), mic(), speaker(), nine(), pump(), boom(), diss()])

@@ -59,6 +59,22 @@ export const CIWS = {
   burstMs: 160, // per target
 };
 
+/** DISS TRACKS: a rechargeable salvo of guided missiles that lock the nearest opps. */
+export const DISS = {
+  rechargeMs: 12_000,
+  count: 3,
+  /** Only opps this close to the ship get locked. */
+  range: 600,
+  damage: 4,
+  blastRadius: 30,
+  speed: 420,
+  accel: 700,
+  /** Max turn, rad/s. */
+  turnRate: 5.5,
+  launchGapMs: 140,
+  ttlS: 3.5,
+};
+
 export const DAMAGE = {
   shell: 22,
   boat: 24,

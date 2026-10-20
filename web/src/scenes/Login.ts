@@ -3,6 +3,7 @@ import { sanitizeProgress } from '../../../shared/progress';
 import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { api, ApiError } from '../net/api';
 import { syncProgress } from '../net/sync';
+import { TOUCH } from '../systems/Device';
 import { Save } from '../systems/Save';
 import { COLORS, panel, text } from '../systems/UI';
 
@@ -17,8 +18,11 @@ export class LoginScene extends Phaser.Scene {
 
   create() {
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.4);
-    panel(this, 220, 60, 520, 420);
-    text(this, WIDTH / 2, 100, 'SIGN TO THE LABEL', 24, COLORS.gold);
+    // On phones the form is its own card (heading included); on desktop it sits inside this panel.
+    if (!TOUCH) {
+      panel(this, 220, 60, 520, 420);
+      text(this, WIDTH / 2, 100, 'SIGN TO THE LABEL', 24, COLORS.gold);
+    }
 
     const form = document.getElementById('login') as HTMLFormElement;
     const callsign = form.querySelector<HTMLInputElement>('[name=callsign]')!;
@@ -26,6 +30,7 @@ export class LoginScene extends Phaser.Scene {
     const msg = form.querySelector<HTMLElement>('.msg')!;
     const cancel = form.querySelector<HTMLButtonElement>('[data-action=cancel]')!;
     form.hidden = false;
+    form.classList.toggle('touch', TOUCH);
     msg.textContent = 'New artist? Pick an MC name and a 4-digit PIN, then REGISTER. Already signed? SIGN IN with the same PIN.';
     msg.className = 'msg';
     callsign.value = '';
@@ -74,8 +79,18 @@ export class LoginScene extends Phaser.Scene {
       if (ev.key === 'Escape' && !form.hidden) close();
     };
     window.addEventListener('keydown', onEsc);
+    // Keep the card in view while the soft keyboard pans the visual viewport.
+    const vv = window.visualViewport;
+    const follow = () => {
+      if (vv && TOUCH) form.style.top = `${vv.offsetTop + 6}px`;
+    };
+    vv?.addEventListener('resize', follow);
+    vv?.addEventListener('scroll', follow);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', onEsc);
+      vv?.removeEventListener('resize', follow);
+      vv?.removeEventListener('scroll', follow);
+      form.style.top = '';
       if (!form.hidden) close(false);
     });
   }

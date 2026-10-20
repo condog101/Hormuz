@@ -70,7 +70,7 @@ export class TitleScene extends Phaser.Scene {
     if (view === 'main') {
       const cont = p.highestLevel;
       this.layer.add(text(this, 165, 160, 'THE ALBUM. THE STRAIT. THE DON.', 8, COLORS.gold));
-      this.layer.add(text(this, 165, 176, 'TWENTY-ONE MILES OF BAD NEIGHBOURHOOD', 8, COLORS.dim));
+      this.layer.add(text(this, 165, 176, 'PAC IS ALIVE. DON HAS A BOAT.', 8, COLORS.dim));
       this.currentMenu = menu(this, MENU_X, 48, [
         { label: cont > 1 ? `CONTINUE - TRACK ${cont}` : 'PRESS PLAY', action: () => this.start('campaign', cont) },
         { label: 'TRACKLIST', action: () => this.show('levels') },
@@ -86,8 +86,8 @@ export class TitleScene extends Phaser.Scene {
           600,
           450,
           byInput(
-            'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK SPEED  E CIWS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON',
-            'ARROWS MOVE  TOUCH THE WATER TO AIM + FIRE\nTAP CIWS / GUN / FLANK ON THE RIGHT  II PAUSE',
+            'WASD MOVE  MOUSE AIM  CLICK/SPACE FIRE\nSHIFT FLANK  E CIWS  R DISS TRACKS  ESC PAUSE\n1/2/3 OR TAB/WHEEL SWITCH WEAPON',
+            'ARROWS MOVE  TOUCH THE WATER TO AIM + FIRE\nTAP DISS / CIWS / GUN / FLANK ON THE RIGHT  II PAUSE',
           ),
           8,
           COLORS.dim,
@@ -130,7 +130,7 @@ export class TitleScene extends Phaser.Scene {
           this,
           WIDTH / 2,
           270,
-          'STRAIGHT OUTTA HORMUZ\n\nA GAME BY CONNOR\nCODE: CLAUDE   ART: GENERATED + LIBRESPRITE\nFONT: PRESS START 2P (OFL)   SFX + BEATS: ZZFX\n\nBIG DON IS A PARODY OF DONALD TRUMP.\nEVERY LINE IS FICTIONAL SATIRE, NOT A REAL QUOTE.\nNO REAL LYRICS WERE HARMED.\nICE CUBE AND 2PAC APPEAR AS CARICATURES.\nTHEIR LINES ARE FICTIONAL TOO.',
+          'STRAIGHT OUTTA HORMUZ\n\nA GAME BY CONNOR\nCODE: CLAUDE   ART: GENERATED + LIBRESPRITE\nFONT: PRESS START 2P (OFL)   SFX + BEATS: ZZFX\n\nBIG DON IS A PARODY OF DONALD TRUMP.\nEVERY LINE IS FICTIONAL SATIRE, NOT A REAL QUOTE.\nNO REAL LYRICS WERE HARMED.\nICE CUBE, 2PAC, SNOOP DOGG AND DR. DRE APPEAR AS\nCARICATURES. THEIR LINES ARE FICTIONAL TOO.',
           8,
           COLORS.text,
         ),

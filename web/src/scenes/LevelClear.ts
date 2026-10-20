@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { LEVEL_COUNT } from '../../../shared/progress';
 import { HEIGHT, PX, WIDTH } from '../data/balance';
+import { ENDING } from '../data/story';
 import { syncProgress } from '../net/sync';
 import { Audio } from '../systems/Audio';
 import { byInput } from '../systems/Device';
@@ -68,7 +69,7 @@ export class LevelClearScene extends Phaser.Scene {
       this,
       () => {
         if (finishedCampaign) {
-          this.scene.start('GameOver', { run, victory: true });
+          this.scene.start('Briefing', { cards: ENDING, next: 'GameOver', nextData: { run, victory: true } });
         } else {
           run.level++;
           this.scene.start('LevelIntro', { run });

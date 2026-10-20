@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { HEIGHT, PX, WIDTH } from '../data/balance';
 import { getLevel } from '../data/levels';
+import { TWEETS } from '../data/story';
 import { byInput } from '../systems/Device';
 import type { RunState } from '../systems/Run';
 import { COLORS, onContinue, panel, text } from '../systems/UI';
@@ -10,8 +11,14 @@ export class LevelIntroScene extends Phaser.Scene {
     super('LevelIntro');
   }
 
-  create(data: { run: RunState }) {
+  create(data: { run: RunState; briefed?: boolean }) {
     const run = data.run;
+    // Big Don posts about the track first.
+    const cards = run.mode === 'campaign' ? TWEETS[run.level] : undefined;
+    if (!data.briefed && cards?.length) {
+      this.scene.start('Briefing', { cards, next: 'LevelIntro', nextData: { run, briefed: true } });
+      return;
+    }
     const L = getLevel(run.level);
     this.add.tileSprite(0, 0, WIDTH, HEIGHT, 'tiles', 0).setOrigin(0).setTileScale(PX).setAlpha(0.5);
     panel(this, 120, 90, 720, 360);

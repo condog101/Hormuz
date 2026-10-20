@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { HEIGHT, WIDTH } from './data/balance';
 import { BootScene } from './scenes/Boot';
+import { BriefingScene } from './scenes/Briefing';
 import { GameScene } from './scenes/Game';
 import { GameOverScene } from './scenes/GameOver';
 import { LeaderboardScene } from './scenes/Leaderboard';
@@ -29,7 +30,7 @@ async function start() {
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     // Two sticks plus a button can be held at once on touch.
     input: { gamepad: true, activePointers: 4 },
-    scene: [BootScene, TitleScene, LoginScene, LevelIntroScene, GameScene, LevelClearScene, GameOverScene, LeaderboardScene],
+    scene: [BootScene, TitleScene, LoginScene, BriefingScene, LevelIntroScene, GameScene, LevelClearScene, GameOverScene, LeaderboardScene],
   });
   // touchstart doesn't count as a user gesture for audio on mobile; these do.
   for (const ev of ['pointerup', 'touchend', 'keydown']) window.addEventListener(ev, () => Audio.unlock());
